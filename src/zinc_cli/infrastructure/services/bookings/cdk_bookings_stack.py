@@ -9,7 +9,7 @@ class CDKBookingsStack(core.Stack):
         module_path = os.path.dirname(__file__)
 
         base_lambda = aws_lambda.Function(
-            self, f"ZincBooking-{project_id}-lambda",
+            self, f"GetFreeSlots",
             handler="lambda_handler.handler",
             runtime=aws_lambda.Runtime.PYTHON_3_7,
             code=aws_lambda.Code.asset(f"{module_path}/lambda"),

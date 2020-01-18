@@ -14,3 +14,5 @@ dist/
 src/zinc_cli/infrastructure/cdk.out/cdk.out
 
 src/zinc_cli/infrastructure/cdk.out/
+
+test/output/

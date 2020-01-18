@@ -15,5 +15,5 @@ class TestZincCreate(unittest.TestCase):
         pass
 
     def test_can_create(self):
-        zinc_create.create_project("integ_test_project")
+        zinc_create.create_project("IntegTestProject")
         pass

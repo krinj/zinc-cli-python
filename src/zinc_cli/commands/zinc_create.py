@@ -38,3 +38,17 @@ def create_project(project_name: str):
     # Try to create the table and persist the project to cloud.
     project_definition_model.create_table()
     project_definition_model.save_to_cloud()
+
+    create_infrastructure(project_name)
+
+
+def create_infrastructure(project_name: str):
+    module_path = os.path.dirname(__file__)
+    current_path = os.getcwd()
+    infrastructure_path = os.path.join(module_path, "..", "infrastructure")
+    os.chdir(infrastructure_path)
+    print(f"Changed Directory to {infrastructure_path} to execute CDK.")
+    result = os.system(f"PROJECT_NAME={project_name} cdk deploy --require-approval never")
+    print(f"Executed Result: {result}")
+    os.chdir(current_path)
+    print(f"Changed Directory back to {current_path}.")
