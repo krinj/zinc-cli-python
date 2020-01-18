@@ -83,6 +83,10 @@ print("Scripts Discovered: " + str(scripts))
 packages = setuptools.find_packages(PACKAGE_SRC)
 print(f"Packages Discovered: {packages}")
 
+with open("requirements.txt", "r") as f:
+    requirement_packages = [line.strip('\n') for line in f.readlines()]
+print(f"Requirements: {requirement_packages}")
+
 setuptools.setup(
     author=AUTHOR,
     author_email=EMAIL,
@@ -94,6 +98,7 @@ setuptools.setup(
     url=REPO,
     packages=packages,
     package_dir={PACKAGE_NAME: PACKAGE_PATH},
+    install_requires=requirement_packages,
     scripts=scripts,
     classifiers=[
         "Programming Language :: Python :: 3.7"
