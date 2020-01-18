@@ -10,3 +10,7 @@ build/
 dist/
 
 *egg-info/
+
+src/zinc_cli/infrastructure/cdk.out/cdk.out
+
+src/zinc_cli/infrastructure/cdk.out/

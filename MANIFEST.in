@@ -1,0 +1,2 @@
+include version
+global-include *.json
