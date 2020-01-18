@@ -1,0 +1,11 @@
+#!/usr/bin/env python
+from zinc_cli.commands import zinc_transform
+
+
+def main():
+    print("Executing Zinc Create Script")
+    zinc_transform.invoke()
+
+
+if __name__ == '__main__':
+    main()
