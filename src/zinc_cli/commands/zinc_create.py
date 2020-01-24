@@ -2,6 +2,7 @@
 import argparse
 import os
 
+from zinc_cli.commands.create.domain.domain_manager import user_owns_domain
 from zinc_cli.models.project_definition.project_definition_model import ProjectDefinitionModel
 from zinc_cli.service.create_project_table_ddb import create_project_table_ddb
 
@@ -11,10 +12,14 @@ def invoke():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", "--name", type=str, required=True, help="Name of the new project.")
+    parser.add_argument("-s", "--static-site", type=str, help="Bootstrap a static site at the domain.")
     args = parser.parse_args()
 
     project_name = args.name
+    static_site_domain = args.static_site
     print("p: " + project_name)
+    print("s: " + static_site_domain)
+    user_owns_domain(static_site_domain)
     create_project(project_name)
 
 
@@ -36,10 +41,9 @@ def create_project(project_name: str):
     project_definition_model.save_to_local()
 
     # Try to create the table and persist the project to cloud.
-    project_definition_model.create_table()
-    project_definition_model.save_to_cloud()
-
-    create_infrastructure(project_name)
+    # project_definition_model.create_table()
+    # project_definition_model.save_to_cloud()
+    # create_infrastructure(project_name)
 
 
 def create_infrastructure(project_name: str):
