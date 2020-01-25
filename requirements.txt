@@ -1,3 +1,4 @@
+botocore
 logkit
 pyyaml
 boto3
