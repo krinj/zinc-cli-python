@@ -45,7 +45,12 @@ zinc-create --name <project-name> --static-site <domain-name>
 
 # Example
 zinc-create --name helloworld --static-site helloworld.com
+
+# To dry-run (test the command but do not actually create resources):
+zinc-create --name helloworld --static-site helloworld.com --dry-run
 ```
 
 This process could take a while — especially for AWS to register and hook up the certificate. When it is done you will have the resources available on your AWS account.
+
+> **NOTE**: The command could take up to an hour to execute, as it tries to create the Site Distribution resource.
 
