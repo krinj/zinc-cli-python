@@ -17,8 +17,12 @@ class TestZincCreate(unittest.TestCase):
 
     def test_can_create(self):
         app_name = sys.argv[0]
-        command_args = "--name integtest --static-site zinccli.com"
+        command_args = "--name ITGT100 --static-site zinccli.com --dry-run"
         sys.argv = [app_name, *command_args.split(" ")]
         print(sys.argv)
         zinc_create.invoke()
+        pass
+
+    def test_create_static_site(self):
+        zinc_create.create_static_site("ITGT423", "zinccli.com", dry_run=True)
         pass

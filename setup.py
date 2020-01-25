@@ -103,7 +103,7 @@ setuptools.setup(
     classifiers=[
         "Programming Language :: Python :: 3.7"
     ],
-    package_data={PACKAGE_NAME: ['infrastructure/*.json']}
+    package_data={PACKAGE_NAME: ['infrastructure/*.json', "infrastructure/services/static_site/default_source/*.html"]}
 )
 
 

@@ -5,10 +5,9 @@ import os
 
 class CDKStaticSiteStack(core.Stack):
 
-    def __init__(self, scope: core.Construct, id: str, project_id: str, **kwargs) -> None:
+    def __init__(self, scope: core.Construct, id: str, project_id: str, domain_name: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
         module_path = os.path.dirname(__file__)
-        domain_name = "zinccli.com"
 
         zone = aws_route53.HostedZone.from_lookup(
             self, "HostedZone",
