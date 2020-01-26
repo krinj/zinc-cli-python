@@ -4,10 +4,11 @@ import argparse
 from aws_cdk import core
 from aws_cdk.cx_api import CloudAssembly
 
-from zinc_cli.infrastructure.services.bookings.cdk_bookings_stack import CDKBookingsStack
 import os
 
-from zinc_cli.infrastructure.services.static_site.cdk_static_site_stack import CDKStaticSiteStack
+from models.infrastructure_service_model import InfrastructureServiceModel
+from services.bookings.cdk_bookings_stack import CDKBookingsStack
+from services.static_site.cdk_static_site_stack import CDKStaticSiteStack
 
 
 def build(project_name: str, site_domain: str, aws_account: str, aws_region: str) -> CloudAssembly:
@@ -44,11 +45,15 @@ def main():
     # parser.add_argument("--aws-region", type=str, help="Bootstrap a static site at the domain.")
     # args = parser.parse_args()
 
+    # Load the service model from the environment.
+    service_model: InfrastructureServiceModel = InfrastructureServiceModel()
+    service_model.load_from_environ()
+
     build(
-        os.environ["ZC_PROJECT_NAME"],
-        os.environ["ZC_SITE_DOMAIN"],
-        os.environ["ZC_AWS_ACCOUNT"],
-        os.environ["ZC_AWS_REGION"])
+        service_model.project_name.value,
+        service_model.static_site_domain.value,
+        service_model.aws_account_id.value,
+        service_model.aws_region.value)
 
 
 if __name__ == "__main__":

@@ -16,8 +16,6 @@ REPO = "https://github.com/krinj"
 
 # Project Defaults.
 PACKAGE_SRC = "src"
-SCRIPTS_SRC = "scripts"
-SCRIPTS_FULL_PATH = os.path.join(PACKAGE_SRC, SCRIPTS_SRC)
 
 # ======================================================================================================================
 # Discover the core package.
@@ -27,7 +25,6 @@ SCRIPTS_FULL_PATH = os.path.join(PACKAGE_SRC, SCRIPTS_SRC)
 src_paths = os.listdir(PACKAGE_SRC)
 src_paths.remove("__pycache__")  # Make sure we don't include this by accident.
 src_paths.remove("__init__.py")  # Make sure we don't include this by accident.
-src_paths.remove(SCRIPTS_SRC)  # Also remove the scripts directory.
 
 if len(src_paths) != 1:
     raise Exception(f"Failed to build: Source directory '{PACKAGE_SRC}' must contain exactly one Python package. "
@@ -77,9 +74,6 @@ copy_version_to_package(PACKAGE_PATH)
 with open("long_description.md", "r") as f:
     long_description = f.read()
 
-scripts = [os.path.join(SCRIPTS_FULL_PATH, f) for f in os.listdir(SCRIPTS_FULL_PATH)]
-print("Scripts Discovered: " + str(scripts))
-
 packages = setuptools.find_packages(PACKAGE_SRC)
 print(f"Packages Discovered: {packages}")
 
@@ -99,10 +93,15 @@ setuptools.setup(
     packages=packages,
     package_dir={PACKAGE_NAME: PACKAGE_PATH},
     install_requires=requirement_packages,
-    scripts=scripts,
     classifiers=[
         "Programming Language :: Python :: 3.7"
     ],
+    entry_points={
+        "console_scripts": [
+            'zinc-create = zinc_cli.commands.zinc_create:invoke',
+            'zinc-transform = zinc_cli.commands.zinc_transform:invoke',
+        ]
+    },
     package_data={PACKAGE_NAME: ['infrastructure/*.json', "infrastructure/services/static_site/default_source/*.html"]}
 )
 
