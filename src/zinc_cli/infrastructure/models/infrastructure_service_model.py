@@ -13,7 +13,8 @@ class InfrastructureServiceModel:
         self.project_name: Field = self._add_field("Z_PROJECT_NAME")
 
         # Static site creation.
-        self.static_site_domain: Field = Field("Z_STATIC_SITE_DOMAIN")
+        self.static_site_root_domain: Field = self._add_field("Z_STATIC_SITE_ROOT_DOMAIN")
+        self.static_site_sub_domain: Field = self._add_field("Z_STATIC_SITE_SUB_DOMAIN")
 
     def _add_field(self, key: str, default: str = "") -> Field:
         field = Field(key, default)
@@ -38,9 +39,14 @@ class InfrastructureServiceModel:
 
     def get_command_line_args(self) -> str:
         # Turn all the non-default fields into environment arguments.
-        commands: List[str] = []
+        commands: Dict[str, str] = self.get_command_line_dict()
+        commands_list = [f"{k}={v}" for k, v in commands.items()]
+        return " ".join(commands_list)
+
+    def get_command_line_dict(self) -> Dict[str, str]:
+        # Turn all the non-default fields into environment arguments.
+        commands: Dict[str, str] = {}
         for field in self._all_fields.values():
             if field.was_edited:
-                commands.append(f"{field.key}={field.value}")
-
-        return " ".join(commands)
+                commands[field.key] = field.value
+        return commands

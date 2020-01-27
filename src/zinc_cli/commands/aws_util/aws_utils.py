@@ -1,5 +1,5 @@
 import boto3
-from ...infrastructure.models.infrastructure_service_model import InfrastructureServiceModel
+from zinc_cli.infrastructure.models.infrastructure_service_model import InfrastructureServiceModel
 
 
 def ensure_aws_access():

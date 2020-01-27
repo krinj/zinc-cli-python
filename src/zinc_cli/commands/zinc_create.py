@@ -1,12 +1,13 @@
 # This function creates a project the same way like a React project.
 import argparse
 import os
+import subprocess
 
 from .aws_util.aws_utils import ensure_aws_access
 from .create.static_site.create_static_site_cmd import create_static_site
 from .create.static_site.create_static_site_request import CreateStaticSiteRequest
-from ..infrastructure.models.infrastructure_service_model import InfrastructureServiceModel
-from ..models.project_definition.project_definition_model import ProjectDefinitionModel
+from zinc_cli.infrastructure.models.infrastructure_service_model import InfrastructureServiceModel
+from zinc_cli.models.project_definition.project_definition_model import ProjectDefinitionModel
 
 
 def invoke():
@@ -73,11 +74,13 @@ def create_infrastructure(service_model: InfrastructureServiceModel, dry_run: bo
     os.chdir(infrastructure_path)
     print(f"Changed Directory to {infrastructure_path} to execute CDK.")
 
-    env_vars = service_model.get_command_line_args()
+    env_map = service_model.get_command_line_dict()
     deploy_command = "deploy" if dry_run is False else "synth"
-    result = os.system(f"{env_vars} cdk {deploy_command} --require-approval never")
-    print(result)
+    final_command = f"cdk {deploy_command} --require-approval never"
+    env_map.update(os.environ.copy())
 
+    print(f"Final Command: {final_command}")
+    result = subprocess.run(final_command.split(" "), env=env_map)
     print(f"Executed Result: {result}")
     os.chdir(current_path)
     print(f"Changed Directory back to {current_path}.")
