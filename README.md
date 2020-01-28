@@ -26,11 +26,57 @@ Zinc will be a downloadable CLI you can use to create and update a headless CMS 
 
 ## Installation
 
-Once you have all of the above requirements, activate your Python 3.7 environment (the same one you installed the AWS CLI to) and install zinc:
+#### Python CLI
+
+Once you have all of the above requirements, activate your Python 3.7 environment (the same one you installed the AWS CLI to) and install zinc.
 
 ```bash
 pip install zinc-cli
 ```
+
+#### With Conda (Linux)
+
+Follow these steps if you don't know how to install or activate a Miniconda environment.
+
+1. Download Miniconda.
+
+   ```bash
+   wget -O miniconda.sh "https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh"
+   ```
+
+2. Install Miniconda.
+
+   ```bash
+   # Follow the prompts.
+   sh miniconda.sh
+   
+   # Or do this if you don't want prompts.
+   sh miniconda.sh -b -p $HOME/miniconda
+   ```
+
+3. Initialise Miniconda.
+
+   ```bash
+   ~/miniconda/bin/conda init
+   ```
+
+4. Create Python environment named `zinc`.
+
+   ```bash
+   conda create --name zinc python=3.7
+   ```
+
+5. Activate zinc environment.
+
+   ```bash
+   source activate zinc
+   ```
+
+6. Install Zinc CLI.
+
+   ```bash
+   pip install zinc-cli
+   ```
 
 ## Create Static Site
 
@@ -54,19 +100,24 @@ This process could take a while — especially for AWS to register and hook up t
 
 > **NOTE**: The command could take up to an hour to execute, as it tries to create the Site Distribution resource.
 
-## Running With Docker
+## Running With Docker in 3 Steps
 
-You can now run this in a Docker container to avoid having to configure a lot of stuff. First you need to [install docker](https://docs.docker.com/install/).
+1. [Install Docker](https://docs.docker.com/install/)
 
-```bash
-# Download the zinc-cli image.
-docker pull zinc-cli:latest
+2. Download the latest `zinc-cli` docker image:
 
-# Run with your environment variables.
-docker run -e AWS_ACCESS_KEY_ID=<YOUR_KEY> -e AWS_SECRET_ACCESS_KEY=<YOUR_SECRET> -e AWS_REGION=<YOUR_DEFAULT_REGION> -i zinc
+   ```bash
+   docker pull infrarift/zinc
+   ```
 
-# Example
-docker run -e AWS_ACCESS_KEY_ID=AKIHJEUAXXXXXE7IIAIA -e AWS_SECRET_ACCESS_KEY=GxDhPPQUtV4grDqx2kswXXXXXXXXXXXXXXXXXXXX -e AWS_REGION=us-west-2 -i zinc
-```
+3. Run with your IAM AWS credentials:
 
-Follow the prompts in the container to create and deploy the project.
+   ```bash
+   # Run with your environment variables.
+   docker run -e AWS_ACCESS_KEY_ID=<YOUR_KEY> -e AWS_SECRET_ACCESS_KEY=<YOUR_SECRET> -e AWS_REGION=<YOUR_DEFAULT_REGION> -i infrarift/zinc
+   
+   # Example
+   docker run -e AWS_ACCESS_KEY_ID=AKIHJEUAXXXXXE7IIAIA -e AWS_SECRET_ACCESS_KEY=GxDhPPQUtV4grDqx2kswXXXXXXXXXXXXXXXXXXXX -e AWS_REGION=us-west-2 -i infrarift/zinc
+   ```
+
+Follow the prompts in the container to create and deploy the project

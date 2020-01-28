@@ -1,6 +1,7 @@
 import os
 import subprocess
 import zinc_cli
+from zinc_cli.commands.create.static_site.create_static_site_request import CreateStaticSiteRequest
 
 
 def main():
@@ -34,13 +35,16 @@ def command_loop():
 def create_static_site():
     project_name = input("Enter Project Name: ")
     site_domain = input("Enter Domain Name: ")
+    sub_domain = input("Enter Subdomain [Press ENTER to skip]: ")
     dry_run = input("Dry-run [y/n]: ")
     dry_run_bool = True if dry_run == "y" else False
     dry_run_cmd = "--dry-run" if dry_run_bool else ""
-    zinc_command = f"zinc-create --name {project_name} --static-site {site_domain} {dry_run_cmd}"
+    sub_domain_cmd = f"--sub-domain {sub_domain}" if len(sub_domain) > 0 else ""
+    zinc_command = f"zinc-create --name {project_name} --static-site {site_domain} {sub_domain_cmd} {dry_run_cmd}"
     print(f"Executing: {zinc_command}")
-    zinc_cli.zinc_create.create_static_site(project_name, site_domain, dry_run_bool)
-    # os.system(zinc_command)
+    # request = CreateStaticSiteRequest(project_name, site_domain, sub_domain)
+    # zinc_cli.zinc_create.create_static_site(project_name, site_domain, dry_run_bool)
+    os.system(zinc_command)
 
 
 if __name__ == "__main__":

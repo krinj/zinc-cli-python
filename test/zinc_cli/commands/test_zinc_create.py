@@ -32,7 +32,7 @@ class TestZincCreate(unittest.TestCase):
         pass
 
     def test_create_static_site(self):
-        request = CreateStaticSiteRequest("ITGT101", "zinccli.com", "")
+        request = CreateStaticSiteRequest("ITGT101", "zinccli.com", None)
         svc_model = zinc_create.create_static_site(request)
         self.service_model.append(svc_model)
         zinc_create.create_infrastructure(self.service_model, dry_run=True)

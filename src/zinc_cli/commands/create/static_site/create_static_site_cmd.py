@@ -26,6 +26,7 @@ def create_static_site(request: CreateStaticSiteRequest):
     # Return the instructions to CFN.
     service_model: InfrastructureServiceModel = InfrastructureServiceModel()
     service_model.static_site_root_domain.set(request.domain_name)
-    service_model.static_site_sub_domain.set(request.sub_domain)
     service_model.project_name.set(request.project_name)
+    if request.sub_domain is not None:
+        service_model.static_site_sub_domain.set(request.sub_domain)
     return service_model
