@@ -1,5 +1,5 @@
 import boto3
-from logkit import log
+import kix
 
 
 def create_project_table_ddb(table_name: str, region: str):
@@ -16,10 +16,10 @@ def create_project_table_ddb(table_name: str, region: str):
             AttributeDefinitions=attributes,
             ProvisionedThroughput=_throughput(1, 1)
         )
-        log.info("Table Creation Response", str(response))
+        kix.info("Table Creation Response", str(response))
 
     except Exception as e:
-        log.error("Failed to create Table", e)
+        kix.error("Failed to create Table", e)
 
 
 # ======================================================================================================================

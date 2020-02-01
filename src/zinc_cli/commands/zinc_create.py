@@ -3,7 +3,7 @@ import argparse
 import os
 import subprocess
 
-from logkit import log
+import kix
 
 from .aws_util.aws_utils import ensure_aws_access
 from .create.static_site.create_static_site_cmd import create_static_site
@@ -27,10 +27,10 @@ def invoke():
     sub_domain = args.sub_domain if len(args.sub_domain) > 0 else None
     dry_run = args.dry_run
 
-    log.info(f"Project Name: {project_name}")
-    log.info(f"Domain Name: {static_site_domain}")
-    log.info(f"Sub Domain: {sub_domain}")
-    log.info(f"Dry-run: {str(dry_run)}")
+    kix.info(f"Project Name: {project_name}")
+    kix.info(f"Domain Name: {static_site_domain}")
+    kix.info(f"Sub Domain: {sub_domain}")
+    kix.info(f"Dry-run: {str(dry_run)}")
 
     # If local only, do not need to go past this point.
 

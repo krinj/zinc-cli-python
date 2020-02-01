@@ -1,8 +1,9 @@
+import kix
+
 from .create_static_site_request import CreateStaticSiteRequest
 from zinc_cli.commands.create.domain.domain_manager import DomainManager
 from zinc_cli.commands.create.domain.hosted_zone_manager import HostedZoneManager
 from zinc_cli.infrastructure.models.infrastructure_service_model import InfrastructureServiceModel
-from logkit import log
 
 
 def create_static_site(request: CreateStaticSiteRequest):
@@ -20,7 +21,7 @@ def create_static_site(request: CreateStaticSiteRequest):
         raise Exception(f"Not a valid domain name: {request.domain_name}")
 
     if not DomainManager.user_owns_domain(request.domain_name):
-        log.warning(f"You do not own the domain {request.domain_name}. "
+        kix.warning(f"You do not own the domain {request.domain_name}. "
                     f"You will need to configure the domain's name servers to redirect the traffic.")
 
     # Return the instructions to CFN.

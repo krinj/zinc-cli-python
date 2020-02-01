@@ -2,8 +2,8 @@ import os
 import uuid
 
 import boto3
+import kix
 import yaml
-from logkit import log
 
 from zinc_cli.models.base_model import BaseModel
 from zinc_cli.service.create_project_table_ddb import create_project_table_ddb
@@ -48,16 +48,16 @@ class ProjectDefinitionModel(BaseModel):
     def save_to_cloud(self):
         dynamodb = boto3.resource('dynamodb', region_name=self._table_region)
         table = dynamodb.Table(self._get_table_name())
-        log.info("DB Table", table)
+        kix.info("DB Table", table)
 
         item = self.serialize()
-        log.info("PutItem", item)
+        kix.info("PutItem", item)
 
         try:
             response = table.put_item(Item=item)
-            log.info("Success", response)
+            kix.info("Success", response)
         except Exception as e:
-            log.error("Error", e)
+            kix.error("Error", e)
         pass
 
     def create_table(self):

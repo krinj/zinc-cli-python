@@ -1,10 +1,9 @@
 import uuid
 
+import kix
 from aws_cdk import core, aws_route53, aws_s3, aws_certificatemanager, aws_cloudfront, aws_route53_targets, \
     aws_s3_deployment
 import os
-
-from logkit import log
 
 
 class CDKStaticSiteStack(core.Stack):
@@ -23,7 +22,7 @@ class CDKStaticSiteStack(core.Stack):
             self, "HostedZone",
             domain_name=root_domain,
             private_zone=False)
-        log.info(f"Zone from look-up: {zone.zone_name}")
+        kix.info(f"Zone from look-up: {zone.zone_name}")
 
         # Compose the full domain.
         if sub_domain is not None and len(sub_domain) > 0:
@@ -47,14 +46,14 @@ class CDKStaticSiteStack(core.Stack):
         core.CfnOutput(self, "BucketArn", value=site_bucket.bucket_arn)
 
         # Certificate
-        log.info("Creating Certificate")
+        kix.info("Creating Certificate")
         cert = aws_certificatemanager.DnsValidatedCertificate(
             self, f"{id}-bucket",
             domain_name=full_domain_name,
             hosted_zone=zone)
         core.CfnOutput(self, 'CertificateArn', value=cert.certificate_arn)
 
-        log.info("Creating Distribution")
+        kix.info("Creating Distribution")
         distribution = aws_cloudfront.CloudFrontWebDistribution(
             self, "SiteDistribution",
             alias_configuration=aws_cloudfront.AliasConfiguration(
@@ -71,14 +70,14 @@ class CDKStaticSiteStack(core.Stack):
         core.CfnOutput(self, "DistributionId", value=distribution.distribution_id)
 
         # Route 53 alias record for the cloudfront distribution
-        log.info("Routing A-Record Alias")
+        kix.info("Routing A-Record Alias")
         aws_route53.ARecord(
             self, "SiteAliasRecord",
             zone=zone,
             target=aws_route53.AddressRecordTarget.from_alias(aws_route53_targets.CloudFrontTarget(distribution)),
             record_name=full_domain_name)
 
-        log.info("Sample Bucket Deployment")
+        kix.info("Sample Bucket Deployment")
         aws_s3_deployment.BucketDeployment(
             self, "DeployWithInvalidation",
             sources=[aws_s3_deployment.Source.asset(os.path.join(module_path, "default_source/"))],

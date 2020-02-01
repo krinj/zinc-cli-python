@@ -102,6 +102,8 @@ This process could take a while — especially for AWS to register and hook up t
 
 ## Running With Docker in 3 Steps
 
+This should only take about 15-20 minutes to set up, and should work on all platforms.
+
 1. [Install Docker](https://docs.docker.com/install/)
 
 2. Download the latest `zinc-cli` docker image:

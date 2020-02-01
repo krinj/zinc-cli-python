@@ -1,5 +1,5 @@
 import boto3
-from logkit import log
+import kix
 
 
 class HostedZoneManager:
@@ -9,12 +9,12 @@ class HostedZoneManager:
         client = boto3.client('route53')
         zones = client.list_hosted_zones_by_name(DNSName=domain)
 
-        log.info(f"Got hosted zones: {zones}")
+        kix.info(f"Got hosted zones: {zones}")
         if not zones:
             return False
 
         hosted_zones = zones['HostedZones']
-        log.info(f"Got hosted zones: {hosted_zones}")
+        kix.info(f"Got hosted zones: {hosted_zones}")
         if len(hosted_zones) == 0:
             return False
 

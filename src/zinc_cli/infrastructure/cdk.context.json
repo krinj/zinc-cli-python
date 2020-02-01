@@ -1,4 +1,8 @@
 {
   "@aws-cdk/core:enableStackNameDuplicates": "true",
-  "aws-cdk:enableDiffNoFail": "true"
+  "aws-cdk:enableDiffNoFail": "true",
+  "hosted-zone:account=535707483867:domainName=zinccli.com:privateZone=false:region=us-east-1": {
+    "Id": "/hostedzone/Z2V1AL5NKD0TDT",
+    "Name": "zinccli.com."
+  }
 }
