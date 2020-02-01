@@ -13,7 +13,7 @@ RUN pip install awscli
 RUN npm install -g cdk@1.22.0
 
 # Install Zinc CLI (UPDATE 1)
-RUN pip install --upgrade zinc-cli==0.0.54
+RUN pip install --upgrade zinc-cli==0.1.3
 RUN pip install --upgrade kix==0.1.5
 
 # Copy the runner script.

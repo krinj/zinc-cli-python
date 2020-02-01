@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 
+import kix
 from aws_cdk import core
 from aws_cdk.cx_api import CloudAssembly
 

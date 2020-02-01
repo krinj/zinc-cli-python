@@ -42,6 +42,11 @@ def invoke():
         static_site_svc_model = create_static_site(request)
         service_model.append(static_site_svc_model)
 
+        kix.info("Bootstrapping CDK")
+        bootstrap = f"cdk bootstrap aws://{service_model.aws_account_id.value}/us-east-1"
+        kix.info(f"Bootstrap Command: {bootstrap}")
+        os.system(bootstrap)
+
     create_infrastructure(service_model, dry_run)
 
 
@@ -74,7 +79,7 @@ def create_infrastructure(service_model: InfrastructureServiceModel, dry_run: bo
     infrastructure_path = os.path.join(module_path, "..", "infrastructure")
 
     os.chdir(infrastructure_path)
-    print(f"Changed Directory to {infrastructure_path} to execute CDK.")
+    kix.info(f"Changed Directory to {infrastructure_path} to execute CDK.")
 
     env_map = service_model.get_command_line_dict()
     deploy_command = "deploy" if dry_run is False else "synth"

@@ -12,7 +12,7 @@ def create_static_site(request: CreateStaticSiteRequest):
 
     # Ensure the hosted zone.
     if not HostedZoneManager.has_hosted_zone(request.domain_name):
-        log.error(f"No hosted zone detected for {request.domain_name}."
+        kix.error(f"No hosted zone detected for {request.domain_name}."
                      f"Please ensure you have created a HostedZone for this domain on your AWS account.")
         raise Exception(f"No hosted zone on AWS account for {request.domain_name}")
 
