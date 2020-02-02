@@ -12,7 +12,7 @@ from services.bookings.cdk_bookings_stack import CDKBookingsStack
 from services.static_site.cdk_static_site_stack import CDKStaticSiteStack
 
 
-def build(service_model: InfrastructureServiceModel) -> CloudAssembly:
+def build(service_model: InfrastructureServiceModel):
 
     # This is the build definition.
     app = core.App()

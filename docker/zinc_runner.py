@@ -38,6 +38,9 @@ def command_loop():
 
 def create_static_site():
 
+    kix.info("Change Directory to Zinc Workspace")
+    os.chdir("/workspace")
+
     project_name = kix.prompt.show_text_input("Enter Project Name")
     site_domain = kix.prompt.show_text_input("Enter Domain Name (root only)")
     sub_domain = kix.prompt.show_text_input("Enter Subdomain Name [Press ENTER to skip]")
