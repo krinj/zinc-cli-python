@@ -23,9 +23,11 @@ def build(service_model: InfrastructureServiceModel):
     # Static site: Region must be us-east-1 for Route53 and CDN.
     env = {"account": service_model.aws_account_id.value, "region": "us-east-1"}
     static_stack_id = f"{service_model.project_name.value}-zinc-static-site"
+    with_https: bool = False if service_model.with_https.value == "False" else True
     CDKStaticSiteStack(app, static_stack_id, service_model.project_name.value,
                        root_domain=service_model.static_site_root_domain.value,
                        sub_domain=service_model.static_site_sub_domain.value,
+                       with_https=with_https,
                        env=env)
 
     # Synthesize the application.

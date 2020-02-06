@@ -13,6 +13,7 @@ class CDKStaticSiteStack(core.Stack):
                  project_id: str,
                  root_domain: str,
                  sub_domain: str,
+                 with_https: bool = False,
                  **kwargs) -> None:
 
         super().__init__(scope, id, **kwargs)
@@ -34,7 +35,7 @@ class CDKStaticSiteStack(core.Stack):
         core.CfnOutput(self, "Site", value=f"https://{full_domain_name}")
 
         # Content bucket
-        bucket_name: str = f"{project_id.lower().replace('_', '-')}.zinc.static-site"
+        bucket_name: str = full_domain_name
         print("Bucket Name: " + bucket_name)
         site_bucket = aws_s3.Bucket(
             self, "SiteBucket",
@@ -45,42 +46,62 @@ class CDKStaticSiteStack(core.Stack):
             removal_policy=core.RemovalPolicy.DESTROY)
         core.CfnOutput(self, "BucketArn", value=site_bucket.bucket_arn)
 
-        # Certificate
-        kix.info("Creating Certificate")
-        cert = aws_certificatemanager.DnsValidatedCertificate(
-            self, f"{id}-bucket",
-            domain_name=full_domain_name,
-            hosted_zone=zone)
-        core.CfnOutput(self, 'CertificateArn', value=cert.certificate_arn)
+        distribution = None
+        a_record_target = None
 
-        kix.info("Creating Distribution")
-        distribution = aws_cloudfront.CloudFrontWebDistribution(
-            self, "SiteDistribution",
-            alias_configuration=aws_cloudfront.AliasConfiguration(
-                acm_cert_ref=cert.certificate_arn,
-                names=[full_domain_name],
-                ssl_method=aws_cloudfront.SSLMethod.SNI,
-                security_policy=aws_cloudfront.SecurityPolicyProtocol.TLS_V1_1_2016,
-            ),
-            origin_configs=[
-                aws_cloudfront.SourceConfiguration(
-                    s3_origin_source=aws_cloudfront.S3OriginConfig(s3_bucket_source=site_bucket),
-                    behaviors=[aws_cloudfront.Behavior(is_default_behavior=True)]
-                )])
-        core.CfnOutput(self, "DistributionId", value=distribution.distribution_id)
+        if with_https:
+            # Certificate
+            kix.info("Creating Certificate")
+            cert = aws_certificatemanager.DnsValidatedCertificate(
+                self, f"{id}-bucket",
+                domain_name=full_domain_name,
+                hosted_zone=zone)
+            core.CfnOutput(self, 'CertificateArn', value=cert.certificate_arn)
 
-        # Route 53 alias record for the cloudfront distribution
+            kix.info("Creating Distribution")
+            distribution = aws_cloudfront.CloudFrontWebDistribution(
+                self, "SiteDistribution",
+                alias_configuration=aws_cloudfront.AliasConfiguration(
+                    acm_cert_ref=cert.certificate_arn,
+                    names=[full_domain_name],
+                    ssl_method=aws_cloudfront.SSLMethod.SNI,
+                    security_policy=aws_cloudfront.SecurityPolicyProtocol.TLS_V1_1_2016,
+                ),
+                origin_configs=[
+                    aws_cloudfront.SourceConfiguration(
+                        s3_origin_source=aws_cloudfront.S3OriginConfig(s3_bucket_source=site_bucket),
+                        behaviors=[aws_cloudfront.Behavior(is_default_behavior=True)]
+                    )])
+            core.CfnOutput(self, "DistributionId", value=distribution.distribution_id)
+            a_record_target = aws_route53.AddressRecordTarget.from_alias(aws_route53_targets.CloudFrontTarget(distribution))
+        else:
+            a_record_target = aws_route53.AddressRecordTarget.from_alias(aws_route53_targets.BucketWebsiteTarget(site_bucket))
+
+        # Route 53 alias record for the CloudFront distribution
         kix.info("Routing A-Record Alias")
         aws_route53.ARecord(
             self, "SiteAliasRecord",
             zone=zone,
-            target=aws_route53.AddressRecordTarget.from_alias(aws_route53_targets.CloudFrontTarget(distribution)),
+            target=a_record_target,
             record_name=full_domain_name)
 
         kix.info("Sample Bucket Deployment")
-        aws_s3_deployment.BucketDeployment(
-            self, "DeployWithInvalidation",
-            sources=[aws_s3_deployment.Source.asset(os.path.join(module_path, "default_source/"))],
-            destination_bucket=site_bucket,
-            distribution=distribution,
-            distribution_paths=["/*"])
+
+        deploy_name = "DeployWithInvalidation"
+        deploy_source = [aws_s3_deployment.Source.asset(os.path.join(module_path, "default_source/"))]
+
+        if distribution is not None:
+            aws_s3_deployment.BucketDeployment(
+                self, deploy_name,
+                sources=deploy_source,
+                destination_bucket=site_bucket,
+                distribution=distribution,
+                distribution_paths=["/*"])
+        else:
+            aws_s3_deployment.BucketDeployment(
+                self, deploy_name,
+                sources=deploy_source,
+                destination_bucket=site_bucket)
+
+    def get_routing_target(self, with_https: bool):
+        pass

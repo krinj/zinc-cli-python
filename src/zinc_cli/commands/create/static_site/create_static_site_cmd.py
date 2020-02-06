@@ -28,6 +28,7 @@ def create_static_site(request: CreateStaticSiteRequest):
     service_model: InfrastructureServiceModel = InfrastructureServiceModel()
     service_model.static_site_root_domain.set(request.domain_name)
     service_model.project_name.set(request.project_name)
+    service_model.with_https.set(request.with_https)
     if request.sub_domain is not None:
         service_model.static_site_sub_domain.set(request.sub_domain)
     return service_model

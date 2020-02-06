@@ -14,7 +14,7 @@ RUN npm install -g cdk@1.22.0
 
 # Install Zinc CLI (UPDATE 1)
 RUN pip install --upgrade zinc-cli==0.1.8
-RUN pip install --upgrade kix==0.1.5
+RUN pip install --upgrade kix==0.1.6
 
 # Copy the runner script.
 ADD zinc_runner.py .

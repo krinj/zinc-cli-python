@@ -1,4 +1,5 @@
 import os
+from typing import Union
 
 
 class InfrastructureServiceField:
@@ -7,7 +8,10 @@ class InfrastructureServiceField:
         self.value: str = default_value
         self.was_edited: bool = False
 
-    def set(self, value: str):
+    def set(self, value: Union[str, bool]):
+        if type(value) is bool:
+            value = str(value)
+
         self.value = value
         self.was_edited = True
         if type(self.value) is not str:

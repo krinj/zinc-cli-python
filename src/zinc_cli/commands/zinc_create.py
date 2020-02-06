@@ -2,6 +2,7 @@
 import argparse
 import os
 import subprocess
+from typing import Union
 
 import kix
 
@@ -22,13 +23,16 @@ def invoke():
     parser.add_argument("--static-site", type=str, help="Bootstrap a static site at the domain.")
     parser.add_argument("--sub-domain", default="", type=str, help="Sub-domain you'd like to bootstrap.")
     parser.add_argument("--dry-run", action="store_true", help="Do not publish to actual AWS.")
+    parser.add_argument("--unsecured", action="store_true", help="Do not put on HTTPS protocol and CFN.")
     args = parser.parse_args()
 
-    project_name = args.name
-    static_site_domain = args.static_site
-    sub_domain = args.sub_domain if len(args.sub_domain) > 0 else None
-    dry_run = args.dry_run
-    should_create_template = True
+    project_name: str = args.name
+    static_site_domain: str = args.static_site
+    sub_domain: Union[str, None] = args.sub_domain if len(args.sub_domain) > 0 else None
+    dry_run: bool = args.dry_run
+    unsecured: bool = args.unsecured
+    should_create_template: bool = True
+    should_create_infrastructure: bool = False
 
     kix.info(f"Project Name: {project_name}")
     kix.info(f"Domain Name: {static_site_domain}")
@@ -52,7 +56,7 @@ def invoke():
     service_model: InfrastructureServiceModel = ensure_aws_access()
 
     if static_site_domain is not None:
-        request = CreateStaticSiteRequest(project_name, static_site_domain, sub_domain)
+        request = CreateStaticSiteRequest(project_name, static_site_domain, sub_domain, with_https=not unsecured)
         static_site_svc_model = create_static_site(request)
         service_model.append(static_site_svc_model)
 
@@ -60,8 +64,10 @@ def invoke():
         bootstrap = f"cdk bootstrap aws://{service_model.aws_account_id.value}/us-east-1"
         kix.info(f"Bootstrap Command: {bootstrap}")
         os.system(bootstrap)
+        should_create_infrastructure = True
 
-    create_infrastructure(service_model, dry_run)
+    if should_create_infrastructure:
+        create_infrastructure(service_model, dry_run)
 
 
 def create_local_resources(project_name: str):

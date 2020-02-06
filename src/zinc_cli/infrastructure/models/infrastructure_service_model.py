@@ -1,5 +1,7 @@
 from typing import Dict, List
 
+import kix
+
 from .infrastructure_service_field import InfrastructureServiceField as Field
 
 
@@ -15,6 +17,7 @@ class InfrastructureServiceModel:
         # Static site creation.
         self.static_site_root_domain: Field = self._add_field("Z_STATIC_SITE_ROOT_DOMAIN")
         self.static_site_sub_domain: Field = self._add_field("Z_STATIC_SITE_SUB_DOMAIN")
+        self.with_https: Field = self._add_field("Z_WITH_HTTPS")
 
     def _add_field(self, key: str, default: str = "") -> Field:
         field = Field(key, default)
@@ -26,8 +29,12 @@ class InfrastructureServiceModel:
             field.write_to_environ()
 
     def load_from_environ(self):
+        data = {}
         for field in self._all_fields.values():
             field.load_from_environ()
+            data[field.key] = field.value
+
+        kix.info("Loading Infrastructure Model from Environment", data)
 
     def append(self, new_model: 'InfrastructureServiceModel'):
 

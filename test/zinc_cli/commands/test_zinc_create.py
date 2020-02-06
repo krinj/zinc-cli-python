@@ -48,3 +48,9 @@ class TestZincCreate(unittest.TestCase):
         svc_model = zinc_create.create_static_site(request)
         self.service_model.append(svc_model)
         zinc_create.create_infrastructure(self.service_model, dry_run=True)
+
+    def test_create_static_site_no_https(self):
+        request = CreateStaticSiteRequest("ITGT101", "zinccli.com", None, with_https=False)
+        svc_model = zinc_create.create_static_site(request)
+        self.service_model.append(svc_model)
+        zinc_create.create_infrastructure(self.service_model, dry_run=True)
