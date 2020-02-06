@@ -116,13 +116,13 @@ This should only take about 15-20 minutes to set up, and should work on all plat
 
    ```bash
    # Run with your environment variables.
-   docker run -e AWS_ACCESS_KEY_ID=<YOUR_KEY> -e AWS_SECRET_ACCESS_KEY=<YOUR_SECRET> -e AWS_REGION=<YOUR_DEFAULT_REGION> -i infrarift/zinc
+   docker run -e AWS_ACCESS_KEY_ID=<YOUR_KEY> -e AWS_SECRET_ACCESS_KEY=<YOUR_SECRET> -e AWS_REGION=<YOUR_DEFAULT_REGION> --volume ${PWD}:/workspace -i infrarift/zinc
    
    # Example.
-   docker run -e AWS_ACCESS_KEY_ID=AKIHJEUAXXXXXE7IIAIA -e AWS_SECRET_ACCESS_KEY=GxDhPPQUtV4grDqx2kswXXXXXXXXXXXXXXXXXXXX -e AWS_REGION=us-west-2 -i infrarift/zinc
+   docker run -e AWS_ACCESS_KEY_ID=AKIHJEUAXXXXXE7IIAIA -e AWS_SECRET_ACCESS_KEY=GxDhPPQUtV4grDqx2kswXXXXXXXXXXXXXXXXXXXX -e AWS_REGION=us-west-2 --volume ${PWD}:/workspace -i infrarift/zinc
    
    # Without Environments.
-   docker run -i infrarift/zinc:latest
+   docker run --volume ${PWD}:/workspace -i infrarift/zinc:latest
    ```
 
 Follow the prompts in the container to create and deploy the project
