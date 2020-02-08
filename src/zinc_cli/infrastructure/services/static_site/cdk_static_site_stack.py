@@ -75,7 +75,8 @@ class CDKStaticSiteStack(core.Stack):
             core.CfnOutput(self, "DistributionId", value=distribution.distribution_id)
             a_record_target = aws_route53.AddressRecordTarget.from_alias(aws_route53_targets.CloudFrontTarget(distribution))
         else:
-            a_record_target = aws_route53.AddressRecordTarget.from_alias(aws_route53_targets.BucketWebsiteTarget(site_bucket))
+            bucket_alias = aws_route53_targets.BucketWebsiteTarget(site_bucket)
+            a_record_target = aws_route53.RecordTarget.from_alias(bucket_alias)
 
         # Route 53 alias record for the CloudFront distribution
         kix.info("Routing A-Record Alias")
