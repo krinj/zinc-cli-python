@@ -10,3 +10,4 @@ aws-cdk.aws-s3>=1.22.0
 aws-cdk.aws-cloudfront>=1.22.0
 aws-cdk.aws-route53-targets>=1.22.0
 aws-cdk.aws-s3-deployment>=1.22.0
+aws-cdk.aws-dynamodb>=1.22.0

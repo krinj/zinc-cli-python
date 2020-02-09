@@ -1,15 +1,8 @@
 #!/usr/bin/env python3
-import argparse
-
-import kix
 from aws_cdk import core
-from aws_cdk.cx_api import CloudAssembly
-
-import os
-
 from models.infrastructure_service_model import InfrastructureServiceModel
-from services.bookings.cdk_bookings_stack import CDKBookingsStack
 from services.static_site.cdk_static_site_stack import CDKStaticSiteStack
+from services.crud_api.cdk_crud_stack import CDKCrudApiStack
 
 
 def build(service_model: InfrastructureServiceModel):
@@ -17,18 +10,23 @@ def build(service_model: InfrastructureServiceModel):
     # This is the build definition.
     app = core.App()
 
-    # Create the stacks.
-    # CDKBookingsStack(app, f"ZincBookings-{project_id}", project_id)
-
     # Static site: Region must be us-east-1 for Route53 and CDN.
-    env = {"account": service_model.aws_account_id.value, "region": "us-east-1"}
-    static_stack_id = f"{service_model.project_name.value}-zinc-static-site"
-    with_https: bool = False if service_model.with_https.value == "False" else True
-    CDKStaticSiteStack(app, static_stack_id, service_model.project_name.value,
-                       root_domain=service_model.static_site_root_domain.value,
-                       sub_domain=service_model.static_site_sub_domain.value,
-                       with_https=with_https,
-                       env=env)
+    if service_model.create_static_site.value:
+        env = {"account": service_model.aws_account_id.value, "region": "us-east-1"}
+        static_stack_id = f"{service_model.project_name.value}-zinc-static-site"
+        with_https: bool = service_model.with_https.value
+        CDKStaticSiteStack(
+            app, static_stack_id, service_model.project_name.value,
+            root_domain=service_model.static_site_root_domain.value,
+            sub_domain=service_model.static_site_sub_domain.value,
+            with_https=with_https,
+            env=env)
+
+    # Lambda API Stack.
+    if service_model.create_crud_api.value:
+        env = {"account": service_model.aws_account_id.value, "region": "us-east-1"}
+        crud_stack_id = f"{service_model.project_name.value}-zinc-crud-api"
+        CDKCrudApiStack(app, crud_stack_id, env=env)
 
     # Synthesize the application.
     app.synth()
@@ -36,14 +34,6 @@ def build(service_model: InfrastructureServiceModel):
 
 def main():
     print("Deploying CDK Stack")
-
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument("--project-name", type=str, help="Name of the new project.")
-    # parser.add_argument("--site-domain", type=str, help="Bootstrap a static site at the domain.")
-    # parser.add_argument("--aws-account", type=str, help="Bootstrap a static site at the domain.")
-    # parser.add_argument("--aws-region", type=str, help="Bootstrap a static site at the domain.")
-    # args = parser.parse_args()
-
     # Load the service model from the environment.
     service_model: InfrastructureServiceModel = InfrastructureServiceModel()
     service_model.load_from_environ()

@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Union
 
 import kix
 
@@ -15,11 +15,15 @@ class InfrastructureServiceModel:
         self.project_name: Field = self._add_field("Z_PROJECT_NAME")
 
         # Static site creation.
+        self.create_static_site: Field = self._add_field("Z_CREATE_STATIC_SITE", default=False)
         self.static_site_root_domain: Field = self._add_field("Z_STATIC_SITE_ROOT_DOMAIN")
         self.static_site_sub_domain: Field = self._add_field("Z_STATIC_SITE_SUB_DOMAIN")
         self.with_https: Field = self._add_field("Z_WITH_HTTPS")
 
-    def _add_field(self, key: str, default: str = "") -> Field:
+        # CRUD API Creation.
+        self.create_crud_api: Field = self._add_field("Z_CREATE_CRUD_API", default=False)
+
+    def _add_field(self, key: str, default: Union[str, bool] = "") -> Field:
         field = Field(key, default)
         self._all_fields[key] = field
         return field
@@ -55,5 +59,5 @@ class InfrastructureServiceModel:
         commands: Dict[str, str] = {}
         for field in self._all_fields.values():
             if field.was_edited:
-                commands[field.key] = field.value
+                commands[field.key] = str(field.value)
         return commands
