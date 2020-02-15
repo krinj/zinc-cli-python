@@ -26,7 +26,7 @@ def build(service_model: InfrastructureServiceModel):
     if service_model.create_crud_api.value:
         env = {"account": service_model.aws_account_id.value, "region": "us-east-1"}
         crud_stack_id = f"{service_model.project_name.value}-zinc-crud-api"
-        CDKCrudApiStack(app, crud_stack_id, env=env)
+        CDKCrudApiStack(app, crud_stack_id, domain="zinccli.com", env=env)
 
     # Synthesize the application.
     app.synth()

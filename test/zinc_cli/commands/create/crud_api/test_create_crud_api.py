@@ -17,5 +17,5 @@ class TestCreateCrudApi(unittest.TestCase):
         if cls.SHOULD_CLEAR:
             clear_output(cls.ORIGINAL_DIR)
 
-    def test_crate_project_cmd(self):
+    def test_create_project_cmd(self):
         pass

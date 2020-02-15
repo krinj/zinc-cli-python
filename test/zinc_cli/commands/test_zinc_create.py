@@ -58,7 +58,7 @@ class TestZincCreate(unittest.TestCase):
         zinc_create.create_infrastructure(self.service_model, dry_run=True)
 
     def test_create_crud_api(self):
-        request = CreateCrudApiRequest("ITGT105")
+        request = CreateCrudApiRequest("ITGT106")
         svc_model = create_crud_api(request)
         self.service_model.append(svc_model)
         zinc_create.create_infrastructure(self.service_model, dry_run=False)
