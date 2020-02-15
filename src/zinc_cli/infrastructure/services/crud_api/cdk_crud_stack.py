@@ -32,10 +32,15 @@ class CDKCrudApiStack(core.Stack):
 
         api_domain_name = f"api.{domain}"
         domain_options = aws_apigateway.DomainNameOptions(domain_name=api_domain_name, certificate=certificate)
+        stage_options = aws_apigateway.StageOptions(
+            throttling_rate_limit=10,
+            throttling_burst_limit=100
+        )
         base_api = aws_apigateway.RestApi(
             self, 'ApiGatewayWithCors',
             rest_api_name='ApiGatewayWithCors',
-            domain_name=domain_options
+            domain_name=domain_options,
+            deploy_options=stage_options
         )
 
         kix.info("Routing A-Record Alias")
