@@ -3,8 +3,11 @@ from aws_cdk import (
     core,
     aws_lambda,
     aws_apigateway,
-    aws_certificatemanager, aws_route53, aws_route53_targets)
+    aws_certificatemanager, aws_route53, aws_route53_targets, aws_iam)
 import os
+
+from aws_cdk.aws_iam import PolicyStatement
+from aws_cdk.custom_resources import AwsCustomResource, AwsSdkCall
 
 
 class CDKContactApiStack(core.Stack):
@@ -22,6 +25,11 @@ class CDKContactApiStack(core.Stack):
             code=aws_lambda.Code.asset(lambda_path),
         )
 
+        base_lambda.add_to_role_policy(aws_iam.PolicyStatement(
+            effect=aws_iam.Effect.ALLOW,
+            resources=["*"],
+            actions=["ses:SendEmail", "ses:SendRawEmail"]))
+
         zone = aws_route53.HostedZone.from_lookup(
             self, "HostedZone",
             domain_name=domain,
@@ -29,6 +37,23 @@ class CDKContactApiStack(core.Stack):
         kix.info(f"Zone from look-up: {zone.zone_name}")
 
         certificate = self.create_certificate(api_domain_name, zone)
+
+        verify_domain_create_call = AwsSdkCall(service="SES",
+                                               action="verifyDomainIdentity",
+                                               parameters={"Domain": domain},
+                                               physical_resource_id_path="VerificationToken")
+
+        verify_domain_identity = AwsCustomResource(
+            self, "VerifyDomainIdentity",
+            on_create=verify_domain_create_call,
+            policy_statements=[PolicyStatement(resources=["*"], actions=["ses:VerifyDomainIdentity"])])
+
+        aws_route53.TxtRecord(
+            self, "SESVerificationRecord",
+            zone=zone,
+            record_name=f"_amazonses.{domain}",
+            values=[verify_domain_identity.get_data_string("VerificationToken")]
+        )
 
         api_domain_name = f"api.{domain}"
         domain_options = aws_apigateway.DomainNameOptions(domain_name=api_domain_name, certificate=certificate)
