@@ -1,6 +1,8 @@
 import os
 import unittest
 import zinc_cli.commands.zinc_create as zinc_create
+from zinc_cli.commands.create.contact_api.create_contact_api_cmd import create_contact_api
+from zinc_cli.commands.create.contact_api.create_contact_api_request import CreateContactApiRequest
 from zinc_cli.commands.create.crud_api.create_crud_api_request import CreateCrudApiRequest
 from zinc_cli.commands.create.crud_api.create_crud_api_cmd import create_crud_api
 from zinc_cli.infrastructure.models.infrastructure_service_model import InfrastructureServiceModel
@@ -60,6 +62,12 @@ class TestZincCreate(unittest.TestCase):
     def test_create_crud_api(self):
         request = CreateCrudApiRequest("ITGT106")
         svc_model = create_crud_api(request)
+        self.service_model.append(svc_model)
+        zinc_create.create_infrastructure(self.service_model, dry_run=False)
+
+    def test_create_contact_api(self):
+        request = CreateContactApiRequest("zsample")
+        svc_model = create_contact_api(request)
         self.service_model.append(svc_model)
         zinc_create.create_infrastructure(self.service_model, dry_run=False)
 

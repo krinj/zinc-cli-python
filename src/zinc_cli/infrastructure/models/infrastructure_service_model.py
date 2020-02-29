@@ -23,6 +23,9 @@ class InfrastructureServiceModel:
         # CRUD API Creation.
         self.create_crud_api: Field = self._add_field("Z_CREATE_CRUD_API", default=False)
 
+        # Contact Form API Creation.
+        self.create_contact_api: Field = self._add_field("Z_CREATE_CONTACT_API", default=False)
+
     def _add_field(self, key: str, default: Union[str, bool] = "") -> Field:
         field = Field(key, default)
         self._all_fields[key] = field

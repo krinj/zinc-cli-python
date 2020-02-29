@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from aws_cdk import core
 from models.infrastructure_service_model import InfrastructureServiceModel
+from services.contact_api.cdk_contact_api_stack import CDKContactApiStack
 from services.static_site.cdk_static_site_stack import CDKStaticSiteStack
 from services.crud_api.cdk_crud_stack import CDKCrudApiStack
 
@@ -27,6 +28,12 @@ def build(service_model: InfrastructureServiceModel):
         env = {"account": service_model.aws_account_id.value, "region": "us-east-1"}
         crud_stack_id = f"{service_model.project_name.value}-zinc-crud-api"
         CDKCrudApiStack(app, crud_stack_id, domain="zinccli.com", env=env)
+
+    # Lambda API Stack.
+    if service_model.create_contact_api.value:
+        env = {"account": service_model.aws_account_id.value, "region": "us-east-1"}
+        crud_stack_id = f"{service_model.project_name.value}-zinc-contact-api"
+        CDKContactApiStack(app, crud_stack_id, domain="zinccli.com", env=env)
 
     # Synthesize the application.
     app.synth()
