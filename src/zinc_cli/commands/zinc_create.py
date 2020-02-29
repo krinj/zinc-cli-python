@@ -49,7 +49,7 @@ def invoke():
     create_local_resources(project_name)
 
     # Create template site.
-    project_request = CreateProjectRequest()
+    project_request = CreateProjectRequest(bucket_name=static_site_domain)
     create_project(project_request)
 
     # AWS Validation.

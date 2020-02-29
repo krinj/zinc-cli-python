@@ -4,6 +4,13 @@ from botocore.exceptions import ClientError
 
 
 def handler(event, context):
+
+    notes = event["notes"] if "notes" in event else "No Notes"
+    phone = event["phone"] if "phone" in event else "No Phone"
+    name = event["name"] if "name" in event else "No Name"
+    email = event["email"] if "email" in event else "hello@zinccli.com"
+    email = "hello@zinccli.com" if (len(email) == 0 or "@" not in email) else email
+
     # Replace sender@example.com with your "From" address.
     # This address must be verified with Amazon SES.
     SENDER = "Zinc Admin <hello@zinccli.com>"
@@ -16,19 +23,23 @@ def handler(event, context):
     AWS_REGION = "us-east-1"
 
     # The subject line for the email.
-    SUBJECT = "Amazon SES Test (SDK for Python)"
+    SUBJECT = f"{name} @ Amazon SES Test (SDK for Python)"
 
     # The email body for recipients with non-HTML email clients.
     BODY_TEXT = ("Amazon SES Test (Python)\r\n"
                  "This email was sent with Amazon SES using the "
-                 "AWS SDK for Python (Boto)."
+                 "AWS SDK for Python (Boto)." + notes
                  )
 
     # The HTML body of the email.
-    BODY_HTML = """<html>
+    BODY_HTML = f"""<html>
     <head></head>
     <body>
       <h1>Amazon SES Test (SDK for Python)</h1>
+      <p>{name}</p>
+      <p>{phone}</p>
+      <p>{email}</p>
+      <p>{notes}</p>
       <p>This email was sent with
         <a href='https://aws.amazon.com/ses/'>Amazon SES</a> using the
         <a href='https://aws.amazon.com/sdk-for-python/'>
@@ -74,6 +85,9 @@ def handler(event, context):
                     'Data': SUBJECT,
                 },
             },
+            ReplyToAddresses=[
+                email,
+            ],
             Source=SENDER
         )
 

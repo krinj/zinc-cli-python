@@ -36,8 +36,7 @@ def create_project(request: CreateProjectRequest):
         current_package_json = json.load(f)
 
     # Inject the deployment script.
-    s3_bucket = "BUCKET-NAME-PLACEHOLDER"
-    deploy_script = f"aws s3 sync build/ s3://{s3_bucket} --acl public-read"
+    deploy_script = f"aws s3 sync build/ s3://{request.bucket_name} --acl public-read"
     current_package_json["scripts"]["deploy"] = deploy_script
     with open(package_json_path, "w") as f:
         json.dump(current_package_json, f, indent=2)
