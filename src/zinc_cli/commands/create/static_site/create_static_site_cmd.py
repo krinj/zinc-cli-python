@@ -8,7 +8,7 @@ from zinc_cli.infrastructure.models.infrastructure_service_model import Infrastr
 
 def create_static_site(request: CreateStaticSiteRequest):
 
-    print(f"Creating Static Site: {request.domain_name}")
+    kix.info(f"Creating Static Site: {request.domain_name}")
 
     # Ensure the hosted zone.
     if not HostedZoneManager.has_hosted_zone(request.domain_name):
@@ -26,9 +26,8 @@ def create_static_site(request: CreateStaticSiteRequest):
 
     # Return the instructions to CFN.
     service_model: InfrastructureServiceModel = InfrastructureServiceModel()
-    service_model.static_site_root_domain.set(request.domain_name)
+    service_model.create_static_site.set(True)
+    service_model.domain_name.set(request.domain_name)
     service_model.project_name.set(request.project_name)
-    service_model.with_https.set(request.with_https)
-    if request.sub_domain is not None:
-        service_model.static_site_sub_domain.set(request.sub_domain)
+    service_model.static_site_bucket_name.set(request.bucket_name)
     return service_model

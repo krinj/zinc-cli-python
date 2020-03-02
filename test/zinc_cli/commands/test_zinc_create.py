@@ -1,6 +1,5 @@
-import os
 import unittest
-import zinc_cli.commands.zinc_create as zinc_create
+import zinc_cli.commands.create.zinc_create as zinc_create
 from zinc_cli.commands.create.contact_api.create_contact_api_cmd import create_contact_api
 from zinc_cli.commands.create.contact_api.create_contact_api_request import CreateContactApiRequest
 from zinc_cli.commands.create.crud_api.create_crud_api_request import CreateCrudApiRequest
@@ -25,7 +24,7 @@ class TestZincCreate(unittest.TestCase):
     def setUp(self) -> None:
         self.service_model: InfrastructureServiceModel = InfrastructureServiceModel()
         self.service_model.aws_account_id.set("535707483867")
-        self.service_model.aws_region.set("ap-southeast-1")
+        self.service_model.aws_region.set("us-east-1")
 
     def test_can_create(self):
         app_name = sys.argv[0]
@@ -36,37 +35,19 @@ class TestZincCreate(unittest.TestCase):
         pass
 
     def test_create_static_site(self):
-        request = CreateStaticSiteRequest("ITGT101", "zinccli.com", None)
+        request = CreateStaticSiteRequest("ITGT101", "zinccli.com", "static.zinccli.com")
         svc_model = zinc_create.create_static_site(request)
         self.service_model.append(svc_model)
         zinc_create.create_infrastructure(self.service_model, dry_run=True)
 
-    def test_create_static_site_with_sub_domain(self):
-        request = CreateStaticSiteRequest("ITGT102", "zinccli.com", "hello")
-        svc_model = zinc_create.create_static_site(request)
-        self.service_model.append(svc_model)
-        zinc_create.create_infrastructure(self.service_model, dry_run=True)
+    def test_create_site_with_contact_api(self):
 
-    def test_create_site_without_zone(self):
-        request = CreateStaticSiteRequest("ITGT103", "invalidzone.com", "")
-        svc_model = zinc_create.create_static_site(request)
-        self.service_model.append(svc_model)
-        zinc_create.create_infrastructure(self.service_model, dry_run=True)
+        project_name: str = "ITGT101"
 
-    def test_create_static_site_no_https(self):
-        request = CreateStaticSiteRequest("ITGT104", "zinccli.com", None, with_https=False)
-        svc_model = zinc_create.create_static_site(request)
+        svc_model = zinc_create.create_static_site(CreateStaticSiteRequest(project_name, "zinccli.com", "static.zinccli.com"))
         self.service_model.append(svc_model)
-        zinc_create.create_infrastructure(self.service_model, dry_run=True)
 
-    def test_create_crud_api(self):
-        request = CreateCrudApiRequest("ITGT106")
-        svc_model = create_crud_api(request)
+        svc_model = create_contact_api(CreateContactApiRequest(project_name))
         self.service_model.append(svc_model)
-        zinc_create.create_infrastructure(self.service_model, dry_run=False)
 
-    def test_create_contact_api(self):
-        request = CreateContactApiRequest("zsample")
-        svc_model = create_contact_api(request)
-        self.service_model.append(svc_model)
         zinc_create.create_infrastructure(self.service_model, dry_run=False)

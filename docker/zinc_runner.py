@@ -1,7 +1,4 @@
 import os
-import subprocess
-import zinc_cli
-from zinc_cli.commands.create.static_site.create_static_site_request import CreateStaticSiteRequest
 import kix
 
 
@@ -49,6 +46,11 @@ def create_static_site():
     dry_run_cmd = "--dry-run" if dry_run_bool else ""
     sub_domain_cmd = f"--sub-domain {sub_domain}" if len(sub_domain) > 0 else ""
     zinc_command = f"zinc-create --name {project_name} --static-site {site_domain} {sub_domain_cmd} {dry_run_cmd}"
+
+    user_target = 1000
+    os.setgid(user_target)
+    os.setuid(user_target)
+    kix.info(f"Setting UID and GID to {user_target} to relax file permissions.")
 
     kix.info(f"Executing Command: {zinc_command}")
     os.system(zinc_command)

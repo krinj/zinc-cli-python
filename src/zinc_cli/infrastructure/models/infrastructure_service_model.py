@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import Dict, Union
 
 import kix
 
@@ -14,11 +14,10 @@ class InfrastructureServiceModel:
         self.aws_region: Field = self._add_field("Z_AWS_REGION")
         self.project_name: Field = self._add_field("Z_PROJECT_NAME")
 
-        # Static site creation.
+        # Static Site Creation.
         self.create_static_site: Field = self._add_field("Z_CREATE_STATIC_SITE", default=False)
-        self.static_site_root_domain: Field = self._add_field("Z_STATIC_SITE_ROOT_DOMAIN")
-        self.static_site_sub_domain: Field = self._add_field("Z_STATIC_SITE_SUB_DOMAIN")
-        self.with_https: Field = self._add_field("Z_WITH_HTTPS")
+        self.domain_name: Field = self._add_field("Z_DOMAIN_NAME")
+        self.static_site_bucket_name: Field = self._add_field("Z_STATIC_SITE_BUCKET")
 
         # CRUD API Creation.
         self.create_crud_api: Field = self._add_field("Z_CREATE_CRUD_API", default=False)

@@ -5,4 +5,5 @@ __email__ = "juangbhanich.k@gmail.com"
 __version__ = "0.1.11"
 
 from .zinc import main
-from .commands import zinc_create, zinc_transform
+from .commands import zinc_transform
+from .commands.create import zinc_create
