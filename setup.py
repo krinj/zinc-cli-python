@@ -98,7 +98,7 @@ setuptools.setup(
     ],
     entry_points={
         "console_scripts": [
-            'zinc-create = zinc_cli.commands.zinc_create:invoke',
+            'zinc-create = zinc_cli.commands.create.zinc_create:invoke',
             'zinc-transform = zinc_cli.commands.zinc_transform:invoke',
         ]
     },

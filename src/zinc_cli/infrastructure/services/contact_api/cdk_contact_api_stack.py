@@ -11,7 +11,7 @@ from aws_cdk.custom_resources import AwsCustomResource, AwsSdkCall
 from services.master_stack import CDKMasterStack
 
 
-def add_contact_api(stack: CDKMasterStack, domain: str):
+def add_contact_api(stack: CDKMasterStack, project_name: str, domain: str, forwarding_email: str):
 
     module_path = os.path.dirname(__file__)
     lambda_path = os.path.join(module_path, "lambda")
@@ -22,6 +22,11 @@ def add_contact_api(stack: CDKMasterStack, domain: str):
         stack, 'ContactFormLambda',
         handler='lambda_handler.handler',
         runtime=aws_lambda.Runtime.PYTHON_3_7,
+        environment={
+            "TARGET_EMAIL": forwarding_email,
+            "SENDER_EMAIL": f"contact@{domain}",
+            "SENDER_NAME": f"{project_name.capitalize()} Contact Form"
+        },
         code=aws_lambda.Code.asset(lambda_path),
     )
 

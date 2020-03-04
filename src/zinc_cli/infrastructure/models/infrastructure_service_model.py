@@ -24,6 +24,7 @@ class InfrastructureServiceModel:
 
         # Contact Form API Creation.
         self.create_contact_api: Field = self._add_field("Z_CREATE_CONTACT_API", default=False)
+        self.forwarding_email: Field = self._add_field("Z_FORWARDING_EMAIL")
 
     def _add_field(self, key: str, default: Union[str, bool] = "") -> Field:
         field = Field(key, default)

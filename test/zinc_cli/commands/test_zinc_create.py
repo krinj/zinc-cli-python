@@ -50,4 +50,4 @@ class TestZincCreate(unittest.TestCase):
         svc_model = create_contact_api(CreateContactApiRequest(project_name))
         self.service_model.append(svc_model)
 
-        zinc_create.create_infrastructure(self.service_model, dry_run=False)
+        zinc_create.create_infrastructure(self.service_model, dry_run=True)

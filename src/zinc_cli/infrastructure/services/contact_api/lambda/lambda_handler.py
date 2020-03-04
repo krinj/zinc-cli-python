@@ -1,6 +1,10 @@
 import json
 import boto3
 from botocore.exceptions import ClientError
+import os
+
+
+TARGET_EMAIL_KEY = "TARGET_EMAIL"
 
 
 def handler(event, context):
@@ -17,7 +21,10 @@ def handler(event, context):
 
     # Replace recipient@example.com with a "To" address. If your account
     # is still in the sandbox, this address must be verified.
-    RECIPIENT = "juangbhanich.k@gmail.com"
+    if TARGET_EMAIL_KEY not in os.environ:
+        return {"statusCode": "500", "body": "No target email detected."}
+
+    RECIPIENT = os.environ[TARGET_EMAIL_KEY]
 
     # If necessary, replace us-west-2 with the AWS Region you're using for Amazon SES.
     AWS_REGION = "us-east-1"

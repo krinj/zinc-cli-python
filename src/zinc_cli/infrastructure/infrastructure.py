@@ -24,7 +24,10 @@ def build(m: InfrastructureServiceModel):
 
     # Contact Form API.
     if m.create_contact_api.value:
-        add_contact_api(master_stack, domain=m.domain_name.value)
+        add_contact_api(master_stack,
+                        project_name=m.project_name.value,
+                        domain=m.domain_name.value,
+                        forwarding_email=m.forwarding_email.value)
 
     # Synthesize the application.
     app.synth()

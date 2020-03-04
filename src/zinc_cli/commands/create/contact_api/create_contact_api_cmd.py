@@ -11,5 +11,6 @@ def create_contact_api(request: CreateContactApiRequest):
     # Return the instructions to CFN.
     service_model: InfrastructureServiceModel = InfrastructureServiceModel()
     service_model.project_name.set(request.project_name)
+    service_model.forwarding_email.set(request.forwarding_email)
     service_model.create_contact_api.set(True)
     return service_model
