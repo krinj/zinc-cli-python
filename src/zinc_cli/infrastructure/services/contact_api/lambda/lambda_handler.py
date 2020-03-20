@@ -47,7 +47,7 @@ def handler(event, context):
 
         # The subject line for the email.
         name = contact_payload["name"] if "name" in contact_payload else "Unknown"
-        SUBJECT = f"{name} [Contact Form]"
+        SUBJECT = f"{name} sent you a message"
 
         # The character encoding for the email.
         CHARSET = "UTF-8"
