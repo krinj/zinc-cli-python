@@ -1,5 +1,6 @@
 import json
-from typing import Dict
+import uuid
+from typing import Dict, List, Tuple
 
 import boto3
 from botocore.exceptions import ClientError
@@ -7,41 +8,11 @@ import os
 
 
 TARGET_EMAIL_KEY = "TARGET_EMAIL"
-SENDER_KEY = "SENDER"
+SENDER_EMAIL_KEY = "SENDER_EMAIL"
+SENDER_NAME_KEY = "SENDER_NAME"
 
 
 def handler(event, context):
-
-    payload = create_payload_from_event(event)
-    email = event["email"] if "email" in event else "hello@zinccli.com"
-    email = "hello@zinccli.com" if (len(email) == 0 or "@" not in email) else email
-
-    # Replace sender@example.com with your "From" address.
-    # This address must be verified with Amazon SES.
-    SENDER = os.environ[SENDER_KEY]  # "Zinc Admin <hello@zinccli.com>"
-
-    # Replace recipient@example.com with a "To" address. If your account
-    # is still in the sandbox, this address must be verified.
-    if TARGET_EMAIL_KEY not in os.environ:
-        return {"statusCode": "500", "body": "No target email detected."}
-
-    RECIPIENT = os.environ[TARGET_EMAIL_KEY]
-
-    # If necessary, replace us-west-2 with the AWS Region you're using for Amazon SES.
-    AWS_REGION = "us-east-1"
-
-    # The subject line for the email.
-    name = payload["name"] if "name" in payload else "Unknown"
-    SUBJECT = f"{name} [Contact Form]"
-
-    # The character encoding for the email.
-    CHARSET = "UTF-8"
-
-    html_body = create_html_from_payload(payload)
-    text_body = create_text_from_payload(payload)
-
-    # Create a new SES resource and specify a region.
-    client = boto3.client('ses', region_name=AWS_REGION)
 
     response = {
         'statusCode': 200,
@@ -49,8 +20,44 @@ def handler(event, context):
         "event": event
     }
 
-    # Try to send the email.
     try:
+        contact_payload, fields_payload = create_payloads_from_event(event)
+        name = event["name"] if "name" in event else "Unknown"
+        email = event["email"] if "email" in event else "hello@zinccli.com"
+        email = "hello@zinccli.com" if (len(email) == 0 or "@" not in email) else email
+
+        # Replace sender@example.com with your "From" address.
+        # This address must be verified with Amazon SES.
+        service_name: str = os.environ[SENDER_NAME_KEY]  # "Zinc Admin <hello@zinccli.com>"
+        service_email: str = os.environ[SENDER_EMAIL_KEY]  # "Zinc Admin <hello@zinccli.com>"
+        sender_id = uuid.uuid4().hex[:12]
+        service_email = f"{sender_id}-{service_email}"
+
+        sender = f"{name} via {service_name} <{service_email}>"
+
+        # Replace recipient@example.com with a "To" address. If your account
+        # is still in the sandbox, this address must be verified.
+        if TARGET_EMAIL_KEY not in os.environ:
+            return {"statusCode": "500", "body": "No target email detected."}
+
+        RECIPIENT = os.environ[TARGET_EMAIL_KEY]
+
+        # If necessary, replace us-west-2 with the AWS Region you're using for Amazon SES.
+        AWS_REGION = "us-east-1"
+
+        # The subject line for the email.
+        name = contact_payload["name"] if "name" in contact_payload else "Unknown"
+        SUBJECT = f"{name} [Contact Form]"
+
+        # The character encoding for the email.
+        CHARSET = "UTF-8"
+
+        html_body = create_html_from_payload(contact_payload, fields_payload)
+        text_body = create_text_from_payload(contact_payload, fields_payload)
+
+        # Create a new SES resource and specify a region.
+        client = boto3.client('ses', region_name=AWS_REGION)
+
         # Provide the contents of the email.
         ses_response = client.send_email(
             Destination={'ToAddresses': [RECIPIENT]},
@@ -71,7 +78,7 @@ def handler(event, context):
                 },
             },
             ReplyToAddresses=[email],
-            Source=SENDER
+            Source=sender
         )
 
     # Display an error if something goes wrong.
@@ -86,60 +93,93 @@ def handler(event, context):
     return response
 
 
-def create_payload_from_event(event):
+def create_payloads_from_event(event) -> (dict, dict):
 
-    known_keys = ["name", "email", "phone", "notes"]
-    payload: Dict[str, str] = {}
+    known_keys = ["notes"]
+    contact_keys = ["name", "email", "phone"]
+
+    contact_payload: Dict[str, str] = {}
+    fields_payload: Dict[str, str] = {}
+
+    # Add all known keys.
+    for k in contact_keys:
+        if k in event:
+            contact_payload[k] = event[k]
 
     # Add all known keys.
     for k in known_keys:
         if k in event:
-            payload[k] = event[k]
+            fields_payload[k] = event[k]
 
     # Add all fielded keys.
     if "fields" in event:
         data = event["fields"]
         for k in data:
-            payload[k] = data[k]
+            fields_payload[k] = data[k]
 
-    return payload
+    return contact_payload, fields_payload
 
 
-def create_html_from_payload(payload: Dict[str, str]):
+def create_html_from_payload(contact_payload: Dict[str, str], fields_payload: Dict[str, str]):
     html_head = """
         <html><head><style>
-        .box { max-width: 720px; padding: 0.7em; margin: 5px; background-color: #eee; border-left: 4px solid #bbb; }
+
+        .container { max-width: 680px; }
+        .box { padding: 0.7em; margin: 0.5em; border: 1px solid #ccc; border-radius: 3px; }
         .cell-title { font-size: 0.9em; }
-        .cell-title-grey { color: #666; }
-        .info-box { background-color: #def9ff; border-left: 4px solid #3289e6; color: #3289e6; }
+        .cell-title-grey { color: #666; font-style: italic}
+        .info-box { background-color: #def9ff; color: #3289e6; border-color: #3289e6;}
+        
+        .header-cell {display: flex; }
+        .header-label {color: #888; width: 5em;}
+        .header-content {}
+        .row-item:not(:last-child) {margin-bottom: 0.5em;}
+        
         </style></head><body>
+        <div class="container">
         """
 
     html_tail = """
-        </body></html>
+        </div></body></html>
         """
 
     # Create the content.
     content = []
-    for k, v in payload.items():
-        item = create_form_box(k.capitalize(), v)
-        content.append(item)
 
     # Add the information section.
     info_box = create_info_box("This message was generated by your contact form from your website.")
     content.append(info_box)
+
+    # Create fields.
+    contact_elements = []
+    for k, v in contact_payload.items():
+        element = create_contact_element(k.capitalize(), v)
+        contact_elements.append(element)
+    contact_section = create_contact_section(contact_elements)
+    content.append(contact_section)
+
+    # Create fields.
+    for k, v in fields_payload.items():
+        item = create_form_box(k.capitalize(), v)
+        content.append(item)
 
     # Put it all together.
     html_body = html_head + "\n".join(content) + html_tail
     return html_body
 
 
-def create_text_from_payload(payload: Dict[str, str]):
+def create_text_from_payload(contact_payload: Dict[str, str], fields_payload: Dict[str, str]):
     # Create the content.
     content = []
-    for k, v in payload.items():
+
+    for k, v in contact_payload.items():
         item = f"{k}: {v}"
         content.append(item)
+
+    for k, v in fields_payload.items():
+        item = f"{k}: {v}"
+        content.append(item)
+
     return "\n".join(content) + "\n\n" + "This message was generated by your contact form from your website."
 
 
@@ -153,8 +193,25 @@ def create_info_box(text: str):
 
 def create_form_box(label: str, body: str):
     return f"""
-    <div class="box">
+    <div class="box">f
       <div class="cell-title cell-title-grey">{label}</div>
       <div>{body}</div>
+    </div>
+    """
+
+
+def create_contact_section(elements: List[str]) -> str:
+    return f"""
+    <div class="box">
+    {''.join(elements)}
+    </div>
+    """
+
+
+def create_contact_element(label: str, body: str) -> str:
+    return f"""
+    <div class="header-cell row-item">
+      <div class="header-label">{label}</div>
+      <div class="header-content">{body}</div>
     </div>
     """

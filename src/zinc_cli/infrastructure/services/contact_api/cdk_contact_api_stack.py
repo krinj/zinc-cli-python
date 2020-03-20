@@ -25,7 +25,7 @@ def add_contact_api(stack: CDKMasterStack, project_name: str, domain: str, forwa
         environment={
             "TARGET_EMAIL": forwarding_email,
             "SENDER_EMAIL": f"contact@{domain}",
-            "SENDER_NAME": f"{project_name.capitalize()} Contact Form",
+            "SENDER_NAME": f"{project_name.capitalize()}",
             "SENDER": f"{project_name.capitalize()} Contact Form <contact@{domain}>"
         },
         code=aws_lambda.Code.asset(lambda_path),

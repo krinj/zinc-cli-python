@@ -56,14 +56,14 @@ def add_static_site(stack: CDKMasterStack, domain: str, bucket_name: str):
         target=a_record_target,
         record_name=domain)
 
-    kix.info("Sample Bucket Deployment")
-    deploy_name = "DeployWithInvalidation"
-    deploy_source = [aws_s3_deployment.Source.asset(os.path.join(module_path, "default_source/"))]
-
-    aws_s3_deployment.BucketDeployment(
-        stack, deploy_name,
-        sources=deploy_source,
-        destination_bucket=site_bucket,
-        distribution=distribution,
-        distribution_paths=["/*"])
+    # kix.info("Sample Bucket Deployment")
+    # deploy_name = "DeployWithInvalidation"
+    # deploy_source = [aws_s3_deployment.Source.asset(os.path.join(module_path, "default_source/"))]
+    #
+    # aws_s3_deployment.BucketDeployment(
+    #     stack, deploy_name,
+    #     sources=deploy_source,
+    #     destination_bucket=site_bucket,
+    #     distribution=distribution,
+    #     distribution_paths=["/*"])
 

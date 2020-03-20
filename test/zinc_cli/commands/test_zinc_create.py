@@ -42,12 +42,14 @@ class TestZincCreate(unittest.TestCase):
 
     def test_create_site_with_contact_api(self):
 
-        project_name: str = "ITGT101"
+        project_name: str = "olive"
 
-        svc_model = zinc_create.create_static_site(CreateStaticSiteRequest(project_name, "zinccli.com", "static.zinccli.com"))
+        static_site_request = CreateStaticSiteRequest(project_name, "zinccli.com", "static.zinccli.com")
+        svc_model = zinc_create.create_static_site(static_site_request)
         self.service_model.append(svc_model)
 
-        svc_model = create_contact_api(CreateContactApiRequest(project_name))
+        contact_form_request = CreateContactApiRequest(project_name, forwarding_email="juangbhanich.k@gmail.com")
+        svc_model = create_contact_api(contact_form_request)
         self.service_model.append(svc_model)
 
-        zinc_create.create_infrastructure(self.service_model, dry_run=True)
+        zinc_create.create_infrastructure(self.service_model, dry_run=False)
