@@ -193,7 +193,7 @@ def create_info_box(text: str):
 
 def create_form_box(label: str, body: str):
     return f"""
-    <div class="box">f
+    <div class="box">
       <div class="cell-title cell-title-grey">{label}</div>
       <div>{body}</div>
     </div>
