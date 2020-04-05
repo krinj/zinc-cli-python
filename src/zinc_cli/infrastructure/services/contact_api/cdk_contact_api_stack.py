@@ -7,7 +7,7 @@ from aws_cdk import (
 import os
 
 from aws_cdk.aws_iam import PolicyStatement
-from aws_cdk.custom_resources import AwsCustomResource, AwsSdkCall
+from aws_cdk.custom_resources import AwsCustomResource, AwsSdkCall, PhysicalResourceId, AwsCustomResourcePolicy
 from services.master_stack import CDKMasterStack
 
 
@@ -36,25 +36,26 @@ def add_contact_api(stack: CDKMasterStack, project_name: str, domain: str, forwa
         resources=["*"],
         actions=["ses:SendEmail", "ses:SendRawEmail"]))
 
-    certificate = create_api_certificate(stack, api_domain_name, stack.zone)
-
     verify_domain_create_call = AwsSdkCall(service="SES",
                                            action="verifyDomainIdentity",
                                            parameters={"Domain": domain},
-                                           physical_resource_id_path="VerificationToken")
+                                           physical_resource_id=PhysicalResourceId.from_response("VerificationToken"))
 
+    policy_statement = PolicyStatement(actions=["ses:VerifyDomainIdentity"], resources=["*"])
     verify_domain_identity = AwsCustomResource(
         stack, "VerifyDomainIdentity",
         on_create=verify_domain_create_call,
-        policy_statements=[PolicyStatement(resources=["*"], actions=["ses:VerifyDomainIdentity"])])
+        policy=AwsCustomResourcePolicy.from_statements(statements=[policy_statement])
+    )
 
     aws_route53.TxtRecord(
         stack, "SESVerificationRecord",
         zone=stack.zone,
         record_name=f"_amazonses.{domain}",
-        values=[verify_domain_identity.get_data_string("VerificationToken")]
+        values=[verify_domain_identity.get_response_field("VerificationToken")]
     )
 
+    certificate = create_api_certificate(stack, api_domain_name, stack.zone)
     domain_options = aws_apigateway.DomainNameOptions(domain_name=api_domain_name, certificate=certificate)
     stage_options = aws_apigateway.StageOptions(
         throttling_rate_limit=10,

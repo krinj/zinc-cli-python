@@ -16,4 +16,6 @@ class CDKMasterStack(core.Stack):
             domain_name=domain,
             private_zone=False)
 
+        self.construct_id: str = id
+
         kix.info(f"Zone from look-up: {self.zone.zone_name}")

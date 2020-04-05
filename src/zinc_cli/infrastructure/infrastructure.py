@@ -2,6 +2,7 @@
 from aws_cdk import core
 from models.infrastructure_service_model import InfrastructureServiceModel
 from services.contact_api.cdk_contact_api_stack import add_contact_api
+from services.crud_api.cdk_crud_stack import add_crud_api
 from services.master_stack import CDKMasterStack
 from services.static_site.cdk_static_site_stack import add_static_site
 
@@ -21,6 +22,9 @@ def build(m: InfrastructureServiceModel):
     # Static site.
     if m.create_static_site.value:
         add_static_site(master_stack, domain=m.domain_name.value, bucket_name=m.static_site_bucket_name.value)
+        admin_domain = f"admin.{m.domain_name.value}"
+        admin_bucket = f"admin.{m.static_site_bucket_name.value}"
+        add_static_site(master_stack, domain=admin_domain, bucket_name=admin_bucket, prefix="Admin")
 
     # Contact Form API.
     if m.create_contact_api.value:
@@ -28,6 +32,13 @@ def build(m: InfrastructureServiceModel):
                         project_name=m.project_name.value,
                         domain=m.domain_name.value,
                         forwarding_email=m.forwarding_email.value)
+
+    # Contact Form API.
+    if True:
+        add_crud_api(
+            master_stack,
+            project_name=m.project_name.value,
+            domain=m.domain_name.value)
 
     # Synthesize the application.
     app.synth()

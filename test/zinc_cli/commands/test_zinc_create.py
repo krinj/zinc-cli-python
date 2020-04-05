@@ -35,16 +35,16 @@ class TestZincCreate(unittest.TestCase):
         pass
 
     def test_create_static_site(self):
-        request = CreateStaticSiteRequest("ITGT101", "zinccli.com", "static.zinccli.com")
+        request = CreateStaticSiteRequest("ITGT101", "pixiweb.net", "static.pixiweb.net")
         svc_model = zinc_create.create_static_site(request)
         self.service_model.append(svc_model)
         zinc_create.create_infrastructure(self.service_model, dry_run=True)
 
     def test_create_site_with_contact_api(self):
 
-        project_name: str = "olive"
+        project_name: str = "pixiweb"
 
-        static_site_request = CreateStaticSiteRequest(project_name, "zinccli.com", "static.zinccli.com")
+        static_site_request = CreateStaticSiteRequest(project_name, "pixiweb.net", "static.pixiweb.net")
         svc_model = zinc_create.create_static_site(static_site_request)
         self.service_model.append(svc_model)
 

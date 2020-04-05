@@ -8,5 +8,9 @@
   "hosted-zone:account=535707483867:domainName=zinccli.com:privateZone=false:region=ap-southeast-1": {
     "Id": "/hostedzone/Z2V1AL5NKD0TDT",
     "Name": "zinccli.com."
+  },
+  "hosted-zone:account=535707483867:domainName=pixiweb.net:privateZone=false:region=us-east-1": {
+    "Id": "/hostedzone/Z0565560ONKFB6CU7U6G",
+    "Name": "pixiweb.net."
   }
 }
