@@ -12,12 +12,8 @@ from services.master_stack import CDKMasterStack
 
 def add_crud_api(stack: CDKMasterStack, project_name: str, domain: str):
 
-    module_path = os.path.dirname(__file__)
-    lambda_path = os.path.join(module_path, "lambda")
     table_name: str = "items"
-    api_path: str = "crud"
     api_domain_name = f"api2.{domain}"
-    table_partition_key = aws_dynamodb.Attribute(name="id", type=aws_dynamodb.AttributeType.STRING)
 
     # Add Authentication ===============================================================================================
 
@@ -27,15 +23,22 @@ def add_crud_api(stack: CDKMasterStack, project_name: str, domain: str):
         auto_verify=aws_cognito.AutoVerifiedAttrs(email=True)
     )
 
-    app_client = aws_cognito.UserPoolClient(
+    aws_cognito.UserPoolClient(
         scope=stack,
         user_pool=user_pool,
         id="AuthClientWeb",
         generate_secret=False
     )
 
-    # Add CRUD API =====================================================================================================
+    id_pool = aws_cognito.CfnIdentityPool(
+        scope=stack,
+        id="IdentityPool",
+        allow_unauthenticated_identities=True
+    )
 
+    # Add CRUD DataStore  =====================================================================
+
+    table_partition_key = aws_dynamodb.Attribute(name="id", type=aws_dynamodb.AttributeType.STRING)
     table = aws_dynamodb.Table(
         scope=stack,
         id="CrudTable",
@@ -43,15 +46,7 @@ def add_crud_api(stack: CDKMasterStack, project_name: str, domain: str):
         partition_key=table_partition_key,
         removal_policy=core.RemovalPolicy.DESTROY)
 
-    api_function = aws_lambda.Function(
-        scope=stack,
-        id="ApiCrudFunction",
-        handler='lambda_handler.handler',
-        runtime=aws_lambda.Runtime.PYTHON_3_7,
-        environment={
-        },
-        code=aws_lambda.Code.asset(lambda_path),
-    )
+    # Add CRUD API =====================================================================================================
 
     certificate = create_api_certificate(stack, api_domain_name, stack.zone)
     domain_options = aws_apigateway.DomainNameOptions(domain_name=api_domain_name, certificate=certificate)
@@ -86,6 +81,45 @@ def add_crud_api(stack: CDKMasterStack, project_name: str, domain: str):
         target=a_record_target,
         record_name=api_domain_name)
 
+    create_api(api_handler="lambda_handler.get_handler",
+               api_name="GetItem",
+               api_method="GET",
+               api_path="crudget",
+               stack=stack, table=table, api=api, authorizer=authorizer)
+
+    create_api(api_handler="lambda_handler.post_handler",
+               api_name="PostItem",
+               api_method="POST",
+               api_path="crudpost",
+               stack=stack, table=table, api=api, authorizer=authorizer)
+
+    core.CfnOutput(stack, 'CrudApiEndpointURL', value=api.url)
+
+
+def create_api(
+        api_handler: str,
+        api_name: str,
+        api_method: str,
+        api_path: str,
+        stack: CDKMasterStack,
+        table: aws_dynamodb.Table,
+        api: aws_apigateway.RestApi,
+        authorizer: aws_apigateway.CfnAuthorizer
+):
+
+    module_path = os.path.dirname(__file__)
+    lambda_path = os.path.join(module_path, "lambda")
+    api_function = aws_lambda.Function(
+        scope=stack,
+        id=f"{api_name}Function",
+        handler=api_handler,
+        runtime=aws_lambda.Runtime.PYTHON_3_7,
+        environment={
+            "TABLE_NAME": table.table_name
+        },
+        code=aws_lambda.Code.asset(lambda_path),
+    )
+
     api_entity = api.root.add_resource(api_path)
     api_lambda_integration = aws_apigateway.LambdaIntegration(
         api_function,
@@ -93,18 +127,15 @@ def add_crud_api(stack: CDKMasterStack, project_name: str, domain: str):
         integration_responses=[get_integration_response()])
 
     get_api = api_entity.add_method(
-        'GET',
+        api_method,
         api_lambda_integration,
         method_responses=[get_method_response()],
         authorization_type=aws_apigateway.AuthorizationType.COGNITO
     )
 
     get_api.node.find_child("Resource").add_property_override('AuthorizerId', authorizer.ref)
-
-    # get_api.node.add_dependency(authorizer)
     add_cors_options(api_entity)
     table.grant_full_access(api_function)
-    core.CfnOutput(stack, 'CrudApiEndpointURL', value=api.url)
 
 
 def create_api_certificate(stack: core.Stack, domain: str, zone: aws_route53.HostedZone):
