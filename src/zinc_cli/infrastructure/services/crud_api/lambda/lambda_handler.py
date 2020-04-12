@@ -7,6 +7,15 @@ DDB_TABLE_NAME = os.environ["TABLE_NAME"]
 client = boto3.client('dynamodb')
 
 
+def any_handler(event, context):
+    return {
+        "statusCode": 200,
+        "body": "YA GOT ME",
+        "event": event,
+        "context": str(context)
+    }
+
+
 def post_handler(event, context):
     try:
         payload = event["payload"] if "payload" in event else "No Payload"

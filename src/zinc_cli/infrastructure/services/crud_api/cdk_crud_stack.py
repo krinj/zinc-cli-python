@@ -81,17 +81,24 @@ def add_crud_api(stack: CDKMasterStack, project_name: str, domain: str):
         target=a_record_target,
         record_name=api_domain_name)
 
-    create_api(api_handler="lambda_handler.get_handler",
+    create_api(api_handler="lambda_handler.any_handler",
                api_name="GetItem",
                api_method="GET",
-               api_path="crudget",
+               api_path="item",
                stack=stack, table=table, api=api, authorizer=authorizer)
 
-    create_api(api_handler="lambda_handler.post_handler",
-               api_name="PostItem",
-               api_method="POST",
-               api_path="crudpost",
-               stack=stack, table=table, api=api, authorizer=authorizer)
+    # create_api(api_handler="lambda_handler.post_handler",
+    #            api_name="PostItem",
+    #            api_method="POST",
+    #            api_path="item",
+    #            stack=stack, table=table, api=api, authorizer=authorizer)
+
+    # create_api(api_handler="lambda_handler.any_handler",
+    #            api_name="AnyItem",
+    #            api_method="ANY",
+    #            api_path="items",
+    #            proxy=True,
+    #            stack=stack, table=table, api=api, authorizer=authorizer)
 
     core.CfnOutput(stack, 'CrudApiEndpointURL', value=api.url)
 
@@ -104,7 +111,8 @@ def create_api(
         stack: CDKMasterStack,
         table: aws_dynamodb.Table,
         api: aws_apigateway.RestApi,
-        authorizer: aws_apigateway.CfnAuthorizer
+        authorizer: aws_apigateway.CfnAuthorizer,
+        proxy: bool = False
 ):
 
     module_path = os.path.dirname(__file__)
@@ -124,18 +132,50 @@ def create_api(
     api_lambda_integration = aws_apigateway.LambdaIntegration(
         api_function,
         proxy=False,
-        integration_responses=[get_integration_response()])
+        integration_responses=[get_integration_response()],
+        request_templates={"application/json": get_request_template()}
+    )
 
-    get_api = api_entity.add_method(
-        api_method,
+    api_lambda_integration_any = aws_apigateway.LambdaIntegration(
+        api_function,
+        proxy=False,
+        request_templates={"application/json": get_request_template()}
+    )
+
+    proxy = api_entity.add_proxy(default_integration=api_lambda_integration_any, any_method=False)
+    add_cors_options(proxy)
+    proxy.add_method(
+        "GET",
+        api_lambda_integration,
+        method_responses=[get_method_response()])
+
+    proxy_post_api = proxy.add_method(
+        "POST",
         api_lambda_integration,
         method_responses=[get_method_response()],
         authorization_type=aws_apigateway.AuthorizationType.COGNITO
     )
+    proxy_post_api.node.find_child("Resource").add_property_override('AuthorizerId', authorizer.ref)
 
-    get_api.node.find_child("Resource").add_property_override('AuthorizerId', authorizer.ref)
+    # api_entity.add_proxy()
+
+    get_api = api_entity.add_method(
+        "GET",
+        api_lambda_integration,
+        method_responses=[get_method_response()]
+    )
+
+    post_api = api_entity.add_method(
+        "POST",
+        api_lambda_integration,
+        method_responses=[get_method_response()],
+        authorization_type=aws_apigateway.AuthorizationType.COGNITO
+    )
+    post_api.node.find_child("Resource").add_property_override('AuthorizerId', authorizer.ref)
+
     add_cors_options(api_entity)
     table.grant_full_access(api_function)
+    return api_entity
 
 
 def create_api_certificate(stack: core.Stack, domain: str, zone: aws_route53.HostedZone):
@@ -146,6 +186,23 @@ def create_api_certificate(stack: core.Stack, domain: str, zone: aws_route53.Hos
         hosted_zone=zone)
     core.CfnOutput(stack, 'CrudApiCertificateArn', value=cert.certificate_arn)
     return cert
+
+
+def get_request_template() -> str:
+    return "{\"auth_sub\": \"$context.authorizer.claims.sub\",\n" \
+           "\"method\": \"$context.httpMethod\",\n" \
+           "\"body\" : $input.json('$'),\n" \
+           "\"queryParams\": {\n" \
+           "#foreach($param in $input.params().querystring.keySet())\n" \
+           "\"$param\": \"$util.escapeJavaScript($input.params().querystring.get($param))\" #if($foreach.hasNext),#end\n" \
+           "#end\n" \
+           "},\n" \
+           "\"pathParams\": {\n" \
+           "#foreach($param in $input.params().path.keySet())\n" \
+           "\"$param\": \"$util.escapeJavaScript($input.params().path.get($param))\" #if($foreach.hasNext),#end\n" \
+           "#end\n" \
+           "}\n" \
+           "}\n"
 
 
 def add_cors_options(api_gateway_resource):
