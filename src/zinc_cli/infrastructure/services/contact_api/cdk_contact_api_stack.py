@@ -15,7 +15,6 @@ def add_contact_api(stack: CDKMasterStack, project_name: str, domain: str, forwa
 
     module_path = os.path.dirname(__file__)
     lambda_path = os.path.join(module_path, "lambda")
-    api_domain_name = f"api.{domain}"
     api_path = "contact"
 
     base_lambda = aws_lambda.Function(
@@ -55,92 +54,6 @@ def add_contact_api(stack: CDKMasterStack, project_name: str, domain: str, forwa
         values=[verify_domain_identity.get_response_field("VerificationToken")]
     )
 
-    certificate = create_api_certificate(stack, api_domain_name, stack.zone)
-    domain_options = aws_apigateway.DomainNameOptions(domain_name=api_domain_name, certificate=certificate)
-    stage_options = aws_apigateway.StageOptions(
-        throttling_rate_limit=10,
-        throttling_burst_limit=100
-    )
-
-    base_api = aws_apigateway.RestApi(
-        stack, 'ContactFormAPIGW',
-        rest_api_name='ContactFormAPI',
-        domain_name=domain_options,
-        deploy_options=stage_options
-    )
-
-    kix.info("Routing A-Record Alias")
-    a_record_target = aws_route53.RecordTarget.from_alias(aws_route53_targets.ApiGateway(base_api))
-    aws_route53.ARecord(
-        stack, "ApiAliasRecord",
-        zone=stack.zone,
-        target=a_record_target,
-        record_name=api_domain_name)
-
-    api_entity = base_api.root.add_resource(api_path)
-    example_entity_lambda_integration = aws_apigateway.LambdaIntegration(
-        base_lambda, proxy=False, integration_responses=[get_integration_response()])
-
-    api_entity.add_method(
-        'POST', example_entity_lambda_integration,
-        method_responses=[get_method_response()])
-
-    add_cors_options(api_entity)
+    stack.add_api_method(api_path, "POST", base_lambda)
 
 
-def create_api_certificate(stack: core.Stack, domain: str, zone: aws_route53.HostedZone):
-    kix.info("Creating Certificate")
-    cert = aws_certificatemanager.DnsValidatedCertificate(
-        stack, f"ApiCertificate",
-        domain_name=domain,
-        hosted_zone=zone)
-    core.CfnOutput(stack, 'ApiCertificateArn', value=cert.certificate_arn)
-    return cert
-
-
-def add_cors_options(api_gateway_resource):
-    api_gateway_resource.add_method(
-        'OPTIONS',
-        aws_apigateway.MockIntegration(
-            integration_responses=[get_options_integration_response()],
-            passthrough_behavior=aws_apigateway.PassthroughBehavior.WHEN_NO_MATCH,
-            request_templates={"application/json": "{\"statusCode\":200}"}),
-        method_responses=[get_options_method_response()])
-
-
-def get_integration_response():
-    integration_response = aws_apigateway.IntegrationResponse(
-        status_code="200",
-        response_parameters={'method.response.header.Access-Control-Allow-Origin': "'*'"})
-    return integration_response
-
-
-def get_method_response():
-    method_response = aws_apigateway.MethodResponse(
-        status_code="200",
-        response_parameters={'method.response.header.Access-Control-Allow-Origin': True})
-    return method_response
-
-
-def get_options_integration_response():
-    integration_response = aws_apigateway.IntegrationResponse(
-        status_code="200",
-        response_parameters={
-            'method.response.header.Access-Control-Allow-Headers': "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
-            'method.response.header.Access-Control-Allow-Origin': "'*'",
-            'method.response.header.Access-Control-Allow-Methods': "'GET,OPTIONS'"
-        }
-    )
-    return integration_response
-
-
-def get_options_method_response():
-    method_response = aws_apigateway.MethodResponse(
-        status_code="200",
-        response_parameters={
-            'method.response.header.Access-Control-Allow-Headers': True,
-            'method.response.header.Access-Control-Allow-Methods': True,
-            'method.response.header.Access-Control-Allow-Origin': True,
-        }
-    )
-    return method_response
