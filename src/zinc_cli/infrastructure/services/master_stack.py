@@ -93,6 +93,7 @@ class CDKMasterStack(core.Stack):
                 "TABLE_NAME": self.public_table.table_name
             },
             code=aws_lambda.Code.asset(lambda_handler_path),
+            timeout=core.Duration.seconds(30)
         )
 
         self.public_table.grant_full_access(api_function)
