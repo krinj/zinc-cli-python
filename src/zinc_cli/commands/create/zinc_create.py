@@ -23,7 +23,8 @@ def invoke():
         project_name=master_request.project_name,
         domain_name=master_request.domain,
         bucket_name=bucket_name,
-        dry_run=master_request.dry_run
+        dry_run=master_request.dry_run,
+        pull_template=master_request.pull_template
     )
     create_project(project_request)
 

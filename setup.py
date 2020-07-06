@@ -23,8 +23,11 @@ PACKAGE_SRC = "src"
 
 # Work out the sources package.
 src_paths = os.listdir(PACKAGE_SRC)
-src_paths.remove("__pycache__")  # Make sure we don't include this by accident.
-src_paths.remove("__init__.py")  # Make sure we don't include this by accident.
+src_to_remove = ["__pycache__", "__init__.py"]  # Make sure we don't include this by accident.
+for src_element in src_to_remove:
+    if src_element in src_paths:
+        src_paths.remove(src_element)
+
 
 if len(src_paths) != 1:
     raise Exception(f"Failed to build: Source directory '{PACKAGE_SRC}' must contain exactly one Python package. "

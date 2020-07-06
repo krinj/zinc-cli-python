@@ -16,15 +16,17 @@ def create_project(request: CreateProjectRequest):
     project_path = request.project_name
     original_path = os.getcwd()
 
-    _create_local_resources(request.project_name, project_path)
-    _clone_template_site(clone_repo, content_folder_dst, content_folder_src)
-    _inject_deployment_script(content_folder_dst, request)
-    _install_project_modules(content_folder_dst)
+    if request.pull_template:
 
-    if request.dry_run:
-        kix.info("Dry run: Removing all local resources.")
-        os.chdir(original_path)
-        shutil.rmtree(project_path)
+        _create_local_resources(request.project_name, project_path)
+        _clone_template_site(clone_repo, content_folder_dst, content_folder_src)
+        _inject_deployment_script(content_folder_dst, request)
+        _install_project_modules(content_folder_dst)
+
+        if request.dry_run:
+            kix.info("Dry run: Removing all local resources.")
+            os.chdir(original_path)
+            shutil.rmtree(project_path)
 
 
 def _inject_deployment_script(destination: str, request: CreateProjectRequest):

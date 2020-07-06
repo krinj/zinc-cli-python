@@ -4,6 +4,7 @@ from typing import Optional, Dict, List
 import kix
 from aws_cdk import core, aws_dynamodb, aws_route53, aws_certificatemanager, aws_apigateway, aws_route53_targets, \
     aws_lambda, aws_cognito
+from aws_cdk.aws_cognito import SignInAliases, RequiredAttributes, UserVerificationConfig, VerificationEmailStyle
 from aws_cdk.aws_route53 import HostedZone
 
 
@@ -37,8 +38,12 @@ class CDKMasterStack(core.Stack):
     def _create_user_pool(self) -> aws_cognito.UserPool:
         user_pool = aws_cognito.UserPool(
             scope=self,
-            id="UserPool",
-            auto_verify=aws_cognito.AutoVerifiedAttrs(email=True)
+            id="UserPoolX",
+            # auto_verify=aws_cognito.AutoVerifiedAttrs(email=True),
+            self_sign_up_enabled=True,
+            required_attributes=RequiredAttributes(email=True),
+            sign_in_aliases=SignInAliases(email=True),
+            user_verification=UserVerificationConfig(email_style=VerificationEmailStyle.LINK)
         )
 
         aws_cognito.UserPoolClient(

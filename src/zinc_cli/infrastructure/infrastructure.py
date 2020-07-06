@@ -14,7 +14,7 @@ def build(m: InfrastructureServiceModel):
 
     # Prepare the environment variables.
     env = {"account": m.aws_account_id.value, "region": m.aws_region.value}
-    stack_id = f"{m.project_name.value}-zinc-stack"
+    stack_id = f"{m.project_name.value}-pxw-stack"
 
     # Create the master stack.
     master_stack = CDKMasterStack(app, stack_id, domain=m.domain_name.value, env=env)
@@ -33,8 +33,8 @@ def build(m: InfrastructureServiceModel):
                         domain=m.domain_name.value,
                         forwarding_email=m.forwarding_email.value)
 
-    # Contact Form API.
-    if True:
+    # Crud API.
+    if m.create_crud_api.value:
         add_crud_api(
             master_stack,
             project_name=m.project_name.value,

@@ -17,6 +17,7 @@ class ZincCreateRequest:
 
         # Meta-data flags.
         self.dry_run: bool = True
+        self.pull_template: bool = True
         self.wizard: bool = False
 
     def gather_arguments(self):
@@ -40,6 +41,8 @@ class ZincCreateRequest:
 
         # Options.
         parser.add_argument("--dry-run", action="store_true", help="Do not publish to actual AWS.")
+        parser.add_argument("--pull-template", action="store_true",
+                            help="Whether or not to pull the local project template.")
         parser.add_argument("--wizard", action="store_true", help="On-board with the wizard.")
         args = parser.parse_args()
 
@@ -49,6 +52,7 @@ class ZincCreateRequest:
         self.forwarding_email: str = args.forwarding_email
         self.dry_run: bool = args.dry_run
         self.wizard: bool = args.wizard
+        self.pull_template: bool = args.pull_template
 
     def _execute_wizard(self):
         # Step by step input for each of the arguments.
@@ -62,9 +66,8 @@ class ZincCreateRequest:
             self.with_contact_api = True
             self.forwarding_email = kix.prompt.show_text_input("Contact form forwarding email")
 
+        self.pull_template = kix.prompt.show_yes_no("Pull local front-end template from git?")
         self.dry_run = kix.prompt.show_yes_no("Is this a dry-run?")
-
-        kix.warning("Wizard is not implemented yet.")
 
     def _validation(self):
         if self.with_contact_api and not self.forwarding_email:
@@ -80,6 +83,7 @@ class ZincCreateRequest:
                 "Enabled": self.with_contact_api,
                 "Forwarding Email": self.forwarding_email
             },
+            "Pull Template": self.pull_template,
             "Dry Run": self.dry_run
         }
         kix.info("Running Zinc Create with Arguments", data)
