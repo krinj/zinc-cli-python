@@ -25,7 +25,8 @@ class CDKMasterStack(core.Stack):
         kix.info(f"Zone from look-up: {self.zone.zone_name}")
 
         # Create the data table.
-        self.public_table: aws_dynamodb.Table = self.create_table("public_crud", "PublicCrudTable")
+        public_crud_table_name: str = "public_crud" + domain.replace(".", "_")
+        self.public_table: aws_dynamodb.Table = self.create_table(public_crud_table_name, "PublicCrudTable")
 
         # Create the user pool.
         self.user_pool: aws_cognito.UserPool = self._create_user_pool()

@@ -2,7 +2,7 @@
 
 __author__ = "Jakrin Juangbhanich"
 __email__ = "juangbhanich.k@gmail.com"
-__version__ = "0.2.6"
+__version__ = "0.2.10"
 
 from .zinc import main
 from .commands import zinc_transform
