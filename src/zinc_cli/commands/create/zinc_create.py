@@ -49,3 +49,5 @@ def invoke():
     # Create service infrastructure.
     create_infrastructure(service_model, master_request.dry_run)
 
+if __name__ == "__main__":
+    invoke()

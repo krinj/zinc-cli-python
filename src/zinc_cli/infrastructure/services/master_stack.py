@@ -4,7 +4,7 @@ from typing import Optional, Dict, List
 import kix
 from aws_cdk import core, aws_dynamodb, aws_route53, aws_certificatemanager, aws_apigateway, aws_route53_targets, \
     aws_lambda, aws_cognito
-from aws_cdk.aws_cognito import SignInAliases, RequiredAttributes, UserVerificationConfig, VerificationEmailStyle
+from aws_cdk.aws_cognito import SignInAliases, UserVerificationConfig, VerificationEmailStyle
 from aws_cdk.aws_route53 import HostedZone
 
 
@@ -33,7 +33,6 @@ class CDKMasterStack(core.Stack):
 
         # Create the API Gateway.
         self._rest_api: Optional[aws_apigateway.RestApi] = None
-        self._api_authorizer = None
         self._api_map: Dict[str, aws_apigateway.Resource] = {}
 
     def _create_user_pool(self) -> aws_cognito.UserPool:
@@ -42,7 +41,6 @@ class CDKMasterStack(core.Stack):
             id="UserPoolX",
             # auto_verify=aws_cognito.AutoVerifiedAttrs(email=True),
             self_sign_up_enabled=True,
-            required_attributes=RequiredAttributes(email=True),
             sign_in_aliases=SignInAliases(email=True),
             user_verification=UserVerificationConfig(email_style=VerificationEmailStyle.LINK)
         )
@@ -79,64 +77,6 @@ class CDKMasterStack(core.Stack):
         api_entity.add_method(method, lambda_integration, method_responses=[self.get_method_response()])
         self.add_cors_options(api_entity)
         return api_entity
-
-    def add_crud_api(self, api_path: str, lambda_handler_path: str,
-                     get_access_auth: bool = False, edit_access_auth: bool = False):
-
-        # Here we add a new CRUD API at the given path.
-        # We will use the data-store we've already created.
-        # We will create all methods and add all headers and integration responses.
-        # We will create proxy methods too.
-
-        # Authorization will depend on whether or not we use it.
-
-        api_function = aws_lambda.Function(
-            scope=self,
-            id=f"{api_path}Function",
-            handler="lambda_handler.handle_crud_request",
-            runtime=aws_lambda.Runtime.PYTHON_3_7,
-            environment={
-                "TABLE_NAME": self.public_table.table_name
-            },
-            code=aws_lambda.Code.asset(lambda_handler_path),
-            timeout=core.Duration.seconds(30)
-        )
-
-        self.public_table.grant_full_access(api_function)
-        api_entity: aws_apigateway.Resource = self._get_api_entity(api_path)
-
-        # Add methods both for the root and the proxy.
-        self._add_generic_api_integration(api_entity, api_function, get_access_auth, edit_access_auth, is_proxy=False)
-        self._add_generic_api_integration(api_entity, api_function, get_access_auth, edit_access_auth, is_proxy=True)
-
-        return api_entity
-
-    def _add_generic_api_integration(
-            self, api_resource: aws_apigateway.Resource, api_function,
-            get_access_auth: bool = False, edit_access_auth: bool = False, is_proxy: bool = False):
-
-        api_lambda_integration = aws_apigateway.LambdaIntegration(
-            api_function,
-            proxy=False,
-            integration_responses=[self.get_integration_response()],
-            request_templates={"application/json": self.get_request_template()}
-        )
-
-        if is_proxy:
-            api_lambda_integration_without_response = aws_apigateway.LambdaIntegration(
-                api_function,
-                proxy=False,
-                request_templates={"application/json": self.get_request_template()}
-            )
-            api_resource = api_resource.add_proxy(
-                default_integration=api_lambda_integration_without_response, any_method=False)
-
-        self.add_cors_options(api_resource)
-        get_authorizer = self._api_authorizer if get_access_auth else None
-        edit_authorizer = self._api_authorizer if edit_access_auth else None
-
-        self._add_generic_api_method(api_resource, api_lambda_integration, ["GET"], get_authorizer)
-        self._add_generic_api_method(api_resource, api_lambda_integration, ["POST"], edit_authorizer)
 
     def _add_generic_api_method(
             self, api_resource: aws_apigateway.Resource, integration: aws_apigateway.LambdaIntegration,
@@ -180,21 +120,8 @@ class CDKMasterStack(core.Stack):
             record_name=api_domain_name)
 
         # Also create the authorizer for this API.
-        self._api_authorizer = self.create_root_api_authorizer(self.user_pool, rest_api)
         return rest_api
 
-    def create_root_api_authorizer(
-            self, user_pool: aws_cognito.UserPool, api: aws_apigateway.RestApi) -> aws_apigateway.CfnAuthorizer:
-        authorizer = aws_apigateway.CfnAuthorizer(
-            scope=self,
-            name="MasterStackApiAuth",
-            id="MasterStackApiAuth",
-            type="COGNITO_USER_POOLS",
-            provider_arns=[user_pool.user_pool_arn],
-            rest_api_id=api.rest_api_id,
-            identity_source="method.request.header.Authorization"
-        )
-        return authorizer
 
     def create_api_certificate(self, domain: str, zone: aws_route53.HostedZone):
         kix.info("Creating Certificate")

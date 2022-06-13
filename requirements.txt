@@ -3,14 +3,14 @@ pyyaml
 boto3
 kix
 
-aws-cdk.core==1.42
-aws-cdk.aws-lambda==1.42
-aws-cdk.aws-route53==1.42
-aws-cdk.aws-s3==1.42
-aws-cdk.aws-cloudfront==1.42
-aws-cdk.aws-route53-targets==1.42
-aws-cdk.aws-s3-deployment==1.42
-aws-cdk.aws-dynamodb==1.42
-aws-cdk.aws-iam==1.42
-aws-cdk.aws-cognito==1.42
-aws-cdk.custom-resources==1.42
+aws-cdk.core==1.159
+aws-cdk.aws-lambda==1.159
+aws-cdk.aws-route53==1.159
+aws-cdk.aws-s3==1.159
+aws-cdk.aws-cloudfront==1.159
+aws-cdk.aws-route53-targets==1.159
+aws-cdk.aws-s3-deployment==1.159
+aws-cdk.aws-dynamodb==1.159
+aws-cdk.aws-iam==1.159
+aws-cdk.aws-cognito==1.159
+aws-cdk.custom-resources==1.159

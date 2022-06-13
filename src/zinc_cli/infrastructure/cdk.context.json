@@ -12,5 +12,9 @@
   "hosted-zone:account=535707483867:domainName=pixiweb.net:privateZone=false:region=us-east-1": {
     "Id": "/hostedzone/Z0565560ONKFB6CU7U6G",
     "Name": "pixiweb.net."
+  },
+  "hosted-zone:account=131125634604:domainName=charmthaimassage.com.au:privateZone=false:region=us-east-1": {
+    "Id": "/hostedzone/Z0688569LY1HWU9OQY6K",
+    "Name": "charmthaimassage.com.au."
   }
 }
